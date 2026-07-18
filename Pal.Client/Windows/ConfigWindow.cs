@@ -8,7 +8,7 @@ using ECommons;
 using ECommons.Configuration;
 using ECommons.ImGuiMethods;
 using Google.Protobuf;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Pal.Client.Configuration;
@@ -171,7 +171,7 @@ namespace Pal.Client.Windows
 
                     if (ThreadLoadImageHandler.TryGetTextureWrap(imagePath, out var logo))
                     {
-                        ImGuiEx.LineCentered("###Logo", () => { ImGui.Image(logo.Handle, new(125f.Scale(), 125f.Scale())); });
+                        ImGuiEx.LineCentered("###Logo", () => { ImGui.Image(logo.ImGuiHandle, new(125f.Scale(), 125f.Scale())); });
                     }
                     else
                     {

@@ -115,7 +115,7 @@ namespace Pal.Client.Rendering
         {
             try
             {
-                Vector3? pos = _objectTable.LocalPlayer?.Position;
+                Vector3? pos = Svc.ClientState.LocalPlayer?.Position;
                 if (pos != null)
                 {
                     ResetLayer(ELayer.Test);
