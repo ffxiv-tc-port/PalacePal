@@ -23,7 +23,7 @@ namespace Pal.Client.Floors
         public bool IsInDeepDungeon() =>
             _clientState.IsLoggedIn
             && _condition[ConditionFlag.InDeepDungeon]
-            && typeof(ETerritoryType).IsEnumDefined(_clientState.TerritoryType);
+            && typeof(ETerritoryType).IsEnumDefined((uint)_clientState.TerritoryType);
 
     }
 
