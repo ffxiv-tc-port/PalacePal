@@ -13,8 +13,21 @@
 		<DebugType>portable</DebugType>
 		<PathMap Condition="$(SolutionDir) != ''">$(SolutionDir)=X:\</PathMap>
 		<GitVersion>false</GitVersion>
-		<Version>4.15.0.0</Version>
 	</PropertyGroup>
+
+	<PropertyGroup>
+		<BuildNumberFile>$(MSBuildProjectDirectory)\BuildNumber.txt</BuildNumberFile>
+		<_PreviousBuildNumber Condition="Exists('$(BuildNumberFile)')">$([System.IO.File]::ReadAllText('$(BuildNumberFile)').Trim())</_PreviousBuildNumber>
+		<_PreviousBuildNumber Condition="'$(_PreviousBuildNumber)' == ''">0</_PreviousBuildNumber>
+		<BuildNumber>$([MSBuild]::Add($(_PreviousBuildNumber), 1))</BuildNumber>
+		<VersionPrefix>7.15.0</VersionPrefix>
+		<Version>$(VersionPrefix).$(BuildNumber)</Version>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<FileVersion>$(Version)</FileVersion>
+	</PropertyGroup>
+	<Target Name="PersistBuildNumber" AfterTargets="Build">
+		<WriteLinesToFile File="$(BuildNumberFile)" Lines="$(BuildNumber)" Overwrite="true" />
+	</Target>
 
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<OutputPath>dist</OutputPath>
