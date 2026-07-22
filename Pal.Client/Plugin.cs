@@ -70,7 +70,7 @@ namespace Pal.Client
                 _framework = framework;
 
                 // set up the current UI language before creating anything
-                Localization.Culture = new CultureInfo(_pluginInterface.UiLanguage);
+                Localization.Culture = new CultureInfo(MapDalamudLanguage(_pluginInterface.UiLanguage));
 
                 _commandManager.AddHandler("/pal", new CommandInfo(OnCommand)
                 {
@@ -211,10 +211,19 @@ namespace Pal.Client
         {
             _logger.LogInformation("Language set to '{Language}'", languageCode);
 
-            Localization.Culture = new CultureInfo(languageCode);
+            Localization.Culture = new CultureInfo(MapDalamudLanguage(languageCode));
             _windowSystem!.Windows.OfType<ILanguageChanged>()
                 .Each(w => w.LanguageChanged());
         }
+
+        // TC Dalamud reports UiLanguage "tw", which CultureInfo resolves to
+        // the Twi (Ghana) language, silently falling back to English; map
+        // Chinese-flavoured codes onto the shipped neutral zh satellite.
+        private static string MapDalamudLanguage(string languageCode) => languageCode switch
+        {
+            "tw" or "zh" or "zh-TW" or "zh-CN" or "zh-Hant" or "zh-Hans" => "zh",
+            _ => languageCode,
+        };
 
         private void Draw()
         {
