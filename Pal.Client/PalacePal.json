@@ -1,6 +1,6 @@
 ﻿{
     "Name": "Palace Pal",
-    "Author": "Liza Carvelli (Puni.sh), Lother",
+    "Author": "Liza Carvelli (Puni.sh)",
     "Punchline": "顯示死者宮殿、天之御柱、正統優雷卡中可能的陷阱與寶藏位置。",
     "Description": "顯示死者宮殿、天之御柱、正統優雷卡中可能的陷阱與寶藏位置。\n\n此插件需要 Splatoon 才能在畫面上繪製各種標示。",
     "RepoUrl": "https://github.com/Lother/PalacePal",
