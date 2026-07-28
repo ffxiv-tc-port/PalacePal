@@ -105,8 +105,16 @@ namespace Pal.Client.DependencyInjection
             if (Svc.ClientState.ClientLanguage == ClientLanguage.Japanese) return @"^地下(\d+)階";
             if (Svc.ClientState.ClientLanguage == ClientLanguage.German) return @"^Ebene (\d+) betreten!";
             if (Svc.ClientState.ClientLanguage == ClientLanguage.French) return @"^Sous-sol (\d+)";
-            if (Svc.ClientState.ClientLanguage == (ClientLanguage)4) return @"^地下(\d+)层";
-            throw new Exception("Invalid client language: " + Svc.ClientState.ClientLanguage);
+            // 中文客戶端:TC(台服)在新版 Dalamud 是 ClientLanguage.TraditionalChinese(7),
+            // 舊版列舉沒有這個值、會回報 ChineseSimplified(4)。這裡用數值比較,才能同時相容
+            // CI 釘住的舊 Dalamud 與執行期的新版。字元類同時吃簡體「层」與繁體「層」。
+            var languageValue = (int)Svc.ClientState.ClientLanguage;
+            if (languageValue is 4 or 5 or 7) return @"^地下(\d+)[层層]";
+
+            // 不要因為不認識的語言就丟例外——ChatService 是在 DI 建構期跑的,
+            // 丟出去會讓整個外掛的 async 載入失敗(而不只是樓層偵測失效)。
+            Svc.Log.Warning($"PalacePal: 未知的客戶端語言 {Svc.ClientState.ClientLanguage},停用樓層偵測。");
+            return "(?!)"; // 永不匹配
 
         }
 
