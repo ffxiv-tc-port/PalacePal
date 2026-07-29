@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Plugin.Services;
@@ -473,7 +472,7 @@ namespace Pal.Client.Floors
                 if (obj == null)
                     continue;
 
-                switch ((uint)Marshal.ReadInt32(obj.Address + 128))
+                switch (obj.DataId)
                 {
                     case 2007182:
                     case 2007183:

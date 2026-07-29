@@ -214,8 +214,8 @@
     <comment>When a trap has no chance of appearing (after a pomander of safety/sight is used), hide it.</comment>
   </data>
   <data name="Config_Traps_HideImpossible_ToolTip" xml:space="preserve">
-    <value>使用鑑知香丸後，只會顯示實際的陷阱位置，其餘陷阱皆會隱藏。
-使用安全香丸後，所有陷阱皆會隱藏。</value>
+    <value>使用魔陶器：全景後，只會顯示實際的陷阱位置，其餘陷阱皆會隱藏。
+使用魔陶器：咒印解除後，所有陷阱皆會隱藏。</value>
   </data>
   <data name="Config_HoardCoffers_Show" xml:space="preserve">
     <value>顯示藏寶箱</value>
@@ -228,7 +228,7 @@
     <comment>When a hoard coffer has no chance of appearing (after a pomander of safety/sight is used), hide it.</comment>
   </data>
   <data name="Config_HoardCoffers_HideImpossible_ToolTip" xml:space="preserve">
-    <value>使用直覺香丸後，只會顯示實際的藏寶箱位置，其餘（可能的）藏寶箱皆會隱藏。</value>
+    <value>使用魔陶器：感知寶藏後，只會顯示實際的藏寶箱位置，其餘（可能的）藏寶箱皆會隱藏。</value>
   </data>
   <data name="Config_SilverCoffer_Show" xml:space="preserve">
     <value>顯示銀寶箱位置</value>
@@ -248,7 +248,7 @@
     <value>顯示金寶箱位置</value>
   </data>
   <data name="Config_GoldCoffers_ToolTip" xml:space="preserve">
-    <value>顯示目前樓層附近的金寶箱（內含香丸）。
+    <value>顯示目前樓層附近的金寶箱（內含魔陶器）。
 此資訊不會與其他玩家同步，也不會在跨樓層/跨次數之間保存。</value>
   </data>
   <data name="Config_GoldCoffer_Color" xml:space="preserve">
@@ -366,7 +366,7 @@
     <value>死者宮殿夥伴會顯示潛在的陷阱與藏寶箱位置。</value>
   </data>
   <data name="Explanation_2" xml:space="preserve">
-    <value>使用香丸來揭露陷阱或寶箱位置時，會儲存你所看到的位置。</value>
+    <value>使用魔陶器來揭露陷阱或寶箱位置時，會儲存你所看到的位置。</value>
   </data>
   <data name="Explanation_3" xml:space="preserve">
     <value>理想上我們希望能發現遊戲中每一個潛在的陷阱與寶箱位置，但單靠一人完成非常繁瑣。51-60 層就有超過 300 個陷阱位置和超過 290 個寶箱位置——而我們甚至不確定地圖資料是否完整。較高樓層由於挑戰次數較少，單人繪製地圖會更加困難。</value>
@@ -455,16 +455,16 @@
     <value>繪製填滿的陷阱圖示</value>
   </data>
   <data name="pnHide Accursed Hoard Locations on Intuition Use" xml:space="preserve">
-    <value>使用直覺香丸時隱藏受詛咒藏寶箱位置</value>
+    <value>使用魔陶器：感知寶藏時隱藏受詛咒藏寶箱位置</value>
   </data>
   <data name="pnHide Accursed Hoard Locations on Intuition Use Help" xml:space="preserve">
-    <value>使用直覺香丸後，在找到受詛咒藏寶箱之前，停用潛在受詛咒藏寶箱位置的顯示。</value>
+    <value>使用魔陶器：感知寶藏後，在找到受詛咒藏寶箱之前，停用潛在受詛咒藏寶箱位置的顯示。</value>
   </data>
   <data name="pnHide Traps on Safety/Sight Use" xml:space="preserve">
-    <value>使用安全/鑑知香丸時隱藏陷阱</value>
+    <value>使用魔陶器：咒印解除/全景時隱藏陷阱</value>
   </data>
   <data name="pnHide Traps on Safety/Sight Use Help" xml:space="preserve">
-    <value>使用鑑知或安全香丸揭露/消除陷阱後，停用顯示此樓層中實際不存在的潛在陷阱。</value>
+    <value>使用魔陶器：全景或咒印解除揭露/消除陷阱後，停用顯示此樓層中實際不存在的潛在陷阱。</value>
   </data>
   <data name="pnHighlight When Activated" xml:space="preserve">
     <value>啟用時醒目提示</value>
@@ -515,15 +515,15 @@
     <value>目前樓層可見金寶箱 {0} 個</value>
   </data>
   <data name="Debug_PomanderOfSight" xml:space="preserve">
-    <value>鑑知香丸：{0}</value>
+    <value>魔陶器：全景：{0}</value>
   </data>
   <data name="Debug_PomanderOfIntuition" xml:space="preserve">
-    <value>直覺香丸：{0}</value>
+    <value>魔陶器：感知寶藏：{0}</value>
   </data>
   <data name="Debug_CouldNotQueryCount" xml:space="preserve">
     <value>無法查詢目前的陷阱/寶箱數量。</value>
   </data>
   <data name="Debug_TrapsCoffersNotDiscoveredNote" xml:space="preserve">
-    <value>若陷阱或寶箱距離太遠（約 1.5-2 個房間），即使使用香丸後也可能不會被發現。</value>
+    <value>若陷阱或寶箱距離太遠（約 1.5-2 個房間），即使使用魔陶器後也可能不會被發現。</value>
   </data>
 </root>
