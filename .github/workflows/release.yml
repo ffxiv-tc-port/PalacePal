@@ -12,7 +12,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          token: ${{ secrets.PRIVATE_SUBMODULE_TOKEN }}
       - name: Install .NET
         uses: actions/setup-dotnet@v5
         with:
