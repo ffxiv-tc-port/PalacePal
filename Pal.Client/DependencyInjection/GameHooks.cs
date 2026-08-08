@@ -96,7 +96,7 @@ namespace Pal.Client.DependencyInjection
             {
                 _logger.LogError(e, "VFX Create Hook failed");
             }
-            return ActorVfxCreateHook.Original(a1, a2, a3, a4, a5, a6, a7);
+            return ActorVfxCreateHook.OriginalDisposeSafe(a1, a2, a3, a4, a5, a6, a7);
         }
 
         public void Dispose()
