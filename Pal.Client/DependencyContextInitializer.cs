@@ -68,6 +68,9 @@ namespace Pal.Client
             _serviceProvider.GetRequiredService<FrameworkService>();
             _serviceProvider.GetRequiredService<ChatService>();
 
+            // 唯讀 IPC 供應端：註冊在這裡才保證 FloorService 已經可以解析。
+            _serviceProvider.GetRequiredService<IpcProvider>();
+
             // eager load any commands to find errors now, not when running them
             _serviceProvider.GetRequiredService<IEnumerable<ISubCommand>>();
 

@@ -494,12 +494,33 @@ namespace Pal.Client.Floors
 
                 switch (obj.DataId)
                 {
+                    // 已現形陷阱的事件物件 DataId：2007182~2007186 死者宮殿、2009504 天之御柱、
+                    // 2013284 正統優雷卡。EO 這一個原本漏掉，所以在正統優雷卡裡永遠記不到陷阱
+                    // （使用者的資料庫裡 1099~1108 這十個 territory 恆為零筆）。
+                    //
+                    // 2013284 的離線查表證據（台服 exd-tc 7.20）：
+                    //  ① EObj 第 2013284 列與其他六個陷阱欄位完全同形 —— Data=0、PopType=2、
+                    //     Invisibility=0、EventHighAddition=0、EyeCollision=False、Target=True、
+                    //     SgbPath 非 0；EObjName 名稱為空（＝不可互動、沒有標題的機關物件）。
+                    //     對照組：同區段的 2013285「正統神典石」/2013286「再生裝置」/2013287
+                    //     「傳送裝置」都有名字，所以「名稱空白」確實能把陷阱與可互動物件分開。
+                    //  ② 位移對齊：天之御柱→正統優雷卡的固定位移 +3780 同時把陷阱(2009504)、
+                    //     小祠(2009505)、再生(2009506)、傳送(2009507)四個語意已確認的物件
+                    //     一一對上 2013284/85/86/87，四連中不會是巧合。
+                    //  ③ 兩份獨立來源同值：NecroLens DataIds.TrapIDs、BossmodReborn
+                    //     AutoClear.RevealedTrapOIDs（0x1EB864 ＝ 2013284）。
+                    //
+                    // ⚠️ 朝聖者之路（1281~1290）的陷阱 NecroLens 記為 2014939，但台服 7.20 的
+                    //    EObj 第 2014939 列是整列歸零的佔位列（PopType=0、Target=False、
+                    //    SgbPath=0，整個 2014933~2014945 區段都一樣），也就是台服還沒有這份資料，
+                    //    離線無從驗證 —— 刻意先不加，等台服真的上了 PT 再驗。
                     case 2007182:
                     case 2007183:
                     case 2007184:
                     case 2007185:
                     case 2007186:
                     case 2009504:
+                    case 2013284:
                         persistentLocations.Add(new PersistentLocation
                         {
                             Type = MemoryLocation.EType.Trap,

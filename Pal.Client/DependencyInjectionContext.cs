@@ -112,6 +112,7 @@ namespace Pal.Client
             _serviceCollection.AddScoped<IPalacePalConfiguration>(sp =>
                 sp.GetRequiredService<ConfigurationManager>().Load());
             _serviceCollection.AddTransient<RepoVerification>();
+            _serviceCollection.AddScoped<IpcProvider>();
 
             // commands
             _serviceCollection.AddScoped<PalConfigCommand>();
