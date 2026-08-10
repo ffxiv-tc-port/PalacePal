@@ -34,6 +34,7 @@ namespace Pal.Client.Floors
         private readonly RenderAdapter _renderAdapter;
         private readonly IObjectTable _objectTable;
         private readonly RemoteApi _remoteApi;
+        private readonly PomanderSensor _pomanderSensor;
 
         internal Queue<IQueueOnFrameworkThread> EarlyEventQueue { get; } = new();
         internal Queue<IQueueOnFrameworkThread> LateEventQueue { get; } = new();
@@ -51,7 +52,8 @@ namespace Pal.Client.Floors
             DebugState debugState,
             RenderAdapter renderAdapter,
             IObjectTable objectTable,
-            RemoteApi remoteApi)
+            RemoteApi remoteApi,
+            PomanderSensor pomanderSensor)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
@@ -65,6 +67,7 @@ namespace Pal.Client.Floors
             _renderAdapter = renderAdapter;
             _objectTable = objectTable;
             _remoteApi = remoteApi;
+            _pomanderSensor = pomanderSensor;
 
             _framework.Update += OnUpdate;
             _configurationManager.Saved += OnSaved;
@@ -111,7 +114,17 @@ namespace Pal.Client.Floors
                     ExternalUtils.UpdateBronzeTreasureCoffers(_clientState.TerritoryType);
                 }
 
-                if (!_territoryState.IsInDeepDungeon() || !_floorService.IsReady(_territoryState.LastTerritory))
+                if (!_territoryState.IsInDeepDungeon())
+                {
+                    _pomanderSensor.Reset();
+                    return;
+                }
+
+                // 魔陶器狀態每幀從遊戲結構重讀 —— 用藥當下就生效,不必等任何重繪事件。
+                // 放在 IsReady 檢查之前,樓層變化才不會在載入畫面期間被漏掉。
+                _pomanderSensor.Update();
+
+                if (!_floorService.IsReady(_territoryState.LastTerritory))
                     return;
 
                 if (_renderAdapter.RequireRedraw)
@@ -284,14 +297,14 @@ namespace Pal.Client.Floors
         {
             switch (location.Type)
             {
+                // 已經在物件表裡的陷阱是「實際存在」的實體(全景把它們顯形了),一律照畫;
+                // 被隱藏的只有資料庫裡的歷史/潛在點位。
                 case MemoryLocation.EType.Trap
-                    when _territoryState.PomanderOfSight == PomanderState.Inactive ||
-                         !_configuration.DeepDungeons.Traps.OnlyVisibleAfterPomander ||
+                    when !_territoryState.ShouldHideTraps(_configuration) ||
                          visibleLocations.Any(x => x == location):
                     return P.Config.TrapColor.ToUint();
                 case MemoryLocation.EType.Hoard
-                    when _territoryState.PomanderOfIntuition == PomanderState.Inactive ||
-                         !_configuration.DeepDungeons.HoardCoffers.OnlyVisibleAfterPomander ||
+                    when !_territoryState.ShouldHideHoardCoffers(_configuration) ||
                          visibleLocations.Any(x => x == location):
                     return _configuration.DeepDungeons.HoardCoffers.Color;
                 default:
@@ -376,11 +389,18 @@ namespace Pal.Client.Floors
 
                 //{ "Name":"Mimic Trap Coffer Fill","type":1,"Enabled":false,"color":838861055,"overlayBGColor":0,"overlayTextColor":4278190335,"overlayVOffset":0.6,"overlayFScale":1.3,"refActorPlaceholder":["<t>"],"FillStep":0.029,"refActorComparisonType":5,"includeOwnHitbox":true,"AdditionalRotation":0.43633232,"Filled":true}
 
-                element.Delegate.color = P.Config.TrapColor.ToUint();
+                // 這裡原本無條件寫回 P.Config.TrapColor,把呼叫端算出來的「隱藏」色丟掉了 ——
+                // 每次重建圖層時被隱藏的陷阱都會重新變成全彩。改成尊重傳進來的顏色:
+                // 要顯示時 color 本來就等於 TrapColor,行為不變;要隱藏時才真的隱藏。
+                element.Delegate.color = color == RenderData.ColorInvisible
+                    ? RenderData.ColorInvisible
+                    : P.Config.TrapColor.ToUint();
                 element.Delegate.Filled = false;
 
                 var element2 = _renderAdapter.CreateElement(location.Type, location.Position, color);
-                element2.Delegate.color = (P.Config.TrapColor with { W = 50f/255f }).ToUint();
+                element2.Delegate.color = color == RenderData.ColorInvisible
+                    ? RenderData.ColorInvisible
+                    : (P.Config.TrapColor with { W = 50f/255f }).ToUint();
                 element2.Delegate.Filled = true;
                 location.RenderElement2 = element2;
                 if (config.Show && config.Fill)

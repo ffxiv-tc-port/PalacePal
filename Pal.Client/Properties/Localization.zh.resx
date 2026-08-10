@@ -466,6 +466,24 @@
   <data name="pnHide Traps on Safety/Sight Use Help" xml:space="preserve">
     <value>使用魔陶器：全景或咒印解除揭露/消除陷阱後，停用顯示此樓層中實際不存在的潛在陷阱。</value>
   </data>
+  <data name="pnHide Traps on Safety Use" xml:space="preserve">
+    <value>使用魔陶器：咒印解除後隱藏陷阱標記</value>
+  </data>
+  <data name="pnHide Traps on Safety Use Help" xml:space="preserve">
+    <value>魔陶器：咒印解除會清除本層所有陷阱，此時記錄下來的陷阱點位已經沒有意義。勾選後在本層隱藏這些標記，進入下一層自動恢復。</value>
+  </data>
+  <data name="pnHide Traps on Sight Use" xml:space="preserve">
+    <value>使用魔陶器：全景後隱藏潛在陷阱標記</value>
+  </data>
+  <data name="pnHide Traps on Sight Use Help" xml:space="preserve">
+    <value>魔陶器：全景會讓本層的陷阱全部顯形，實際存在的陷阱仍然照常標記，只隱藏資料庫裡沒有對應實體的潛在點位。進入下一層自動恢復。</value>
+  </data>
+  <data name="pnHide Hoard on Intuition Use" xml:space="preserve">
+    <value>使用魔陶器：感知寶藏後隱藏潛在受詛咒藏寶箱標記</value>
+  </data>
+  <data name="pnHide Hoard on Intuition Use Help" xml:space="preserve">
+    <value>魔陶器：感知寶藏會直接指出本層埋藏寶藏的位置，記錄下來的潛在點位即成為干擾。此效果依遊戲設定會持續到發現埋藏的寶藏為止（可跨樓層），隱藏也跟著持續。</value>
+  </data>
   <data name="pnHighlight When Activated" xml:space="preserve">
     <value>啟用時醒目提示</value>
   </data>
@@ -519,6 +537,9 @@
   </data>
   <data name="Debug_PomanderOfIntuition" xml:space="preserve">
     <value>魔陶器：感知寶藏：{0}</value>
+  </data>
+  <data name="Debug_PomanderFromMemory" xml:space="preserve">
+    <value>本層效果旗標（遊戲記憶體）：咒印解除={0}、全景={1}、感知寶藏={2}</value>
   </data>
   <data name="Debug_CouldNotQueryCount" xml:space="preserve">
     <value>無法查詢目前的陷阱/寶箱數量。</value>

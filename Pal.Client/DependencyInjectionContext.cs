@@ -122,6 +122,7 @@ namespace Pal.Client
 
             // territory & marker related services
             _serviceCollection.AddScoped<TerritoryState>();
+            _serviceCollection.AddScoped<PomanderSensor>();
             _serviceCollection.AddScoped<FrameworkService>();
             _serviceCollection.AddScoped<ChatService>();
             _serviceCollection.AddScoped<FloorService>();

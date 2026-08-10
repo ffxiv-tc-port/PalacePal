@@ -889,6 +889,15 @@ namespace Pal.Client.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Floor effect flags (game memory): Safety={0}, Sight={1}, Intuition={2}.
+        /// </summary>
+        internal static string Debug_PomanderFromMemory {
+            get {
+                return ResourceManager.GetString("Debug_PomanderFromMemory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not query current trap/coffer count..
         /// </summary>
         internal static string Debug_CouldNotQueryCount {
@@ -1056,6 +1065,60 @@ namespace Pal.Client.Properties {
         internal static string pnHide_Traps_on_Safety_Sight_Use_Help {
             get {
                 return ResourceManager.GetString("pnHide Traps on Safety/Sight Use Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide Potential Accursed Hoard Markers after Pomander of Intuition.
+        /// </summary>
+        internal static string pnHide_Hoard_on_Intuition_Use {
+            get {
+                return ResourceManager.GetString("pnHide Hoard on Intuition Use", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A Pomander of Intuition points at the actual hoard, so the recorded potential locations are noise. The pomander stays in effect across floors until the hoard is found, and so does this..
+        /// </summary>
+        internal static string pnHide_Hoard_on_Intuition_Use_Help {
+            get {
+                return ResourceManager.GetString("pnHide Hoard on Intuition Use Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide Trap Markers after Pomander of Safety.
+        /// </summary>
+        internal static string pnHide_Traps_on_Safety_Use {
+            get {
+                return ResourceManager.GetString("pnHide Traps on Safety Use", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to After a Pomander of Safety removes every trap on this floor, the recorded trap locations are pure noise. Hide them until the next floor..
+        /// </summary>
+        internal static string pnHide_Traps_on_Safety_Use_Help {
+            get {
+                return ResourceManager.GetString("pnHide Traps on Safety Use Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide Potential Trap Markers after Pomander of Sight.
+        /// </summary>
+        internal static string pnHide_Traps_on_Sight_Use {
+            get {
+                return ResourceManager.GetString("pnHide Traps on Sight Use", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to After a Pomander of Sight reveals this floor, every real trap is visible in the world, so only the potential locations are hidden - traps that actually exist keep their marker. Restored on the next floor..
+        /// </summary>
+        internal static string pnHide_Traps_on_Sight_Use_Help {
+            get {
+                return ResourceManager.GetString("pnHide Traps on Sight Use Help", resourceCulture);
             }
         }
         
