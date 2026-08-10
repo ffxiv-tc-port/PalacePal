@@ -404,19 +404,40 @@ namespace Pal.Client.Floors
             _renderAdapter.SetLayer(ELayer.RegularCoffers, elements);
         }
 
+        /// <summary>
+        /// 算出一個持久點位該用什麼顏色畫。<see cref="RenderData.ColorInvisible"/> ＝ 不顯示。
+        /// </summary>
+        /// <remarks>
+        /// 🔴 2026-08-10 使用者裁決,**不要改回去**。原話:
+        /// 「使用全景和咒印解除時 沒有把畫面上的陷阱刷掉」——
+        /// 用藥之後遊戲自己會把真陷阱顯示出來,PalacePal 再畫一圈是冗餘的。
+        /// 所以隱藏旗標成立時,**連已經顯形的實體也一起隱藏**。
+        ///
+        /// 原本這兩個 case 各多一個覆寫 <c>|| visibleLocations.Any(x =&gt; x == location)</c>,
+        /// 當初的理由是「已經在物件表裡的陷阱是實際存在的實體(全景把它們顯形了),一律照畫;
+        /// 被隱藏的只有資料庫裡的歷史/潛在點位」。那個理由在「沒用藥」的情境仍然成立 ——
+        /// 但沒用藥時 ShouldHideTraps() 本來就回 false、第一個運算元直接短路命中,
+        /// 覆寫根本不會被求值。也就是說「把覆寫收到旗標閘門底下」之後它沒有任何可達情境,
+        /// 因此直接移除,而不是留一個永遠不成立的條件在這裡騙下一個讀碼的人。
+        /// ⇒ 旗標為 false 時的行為與改動前逐位元相同。
+        ///
+        /// <paramref name="visibleLocations"/> 刻意保留在簽章裡:它是「這一幀實際看得到哪些實體」
+        /// 的唯一入口,將來要做「只隱藏資料庫點位、保留已顯形實體」的第三種模式時會需要它。
+        ///
+        /// ⚠️ 這個方法只決定「畫不畫」。點位的記錄與上傳走 MergePersistentLocations,
+        /// 與顏色完全無關 —— 隱藏期間照樣會學到並上傳新的陷阱點位。
+        /// ⚠️ 就地改色(CheckLocationsForPomanders)與整層重建(RecreatePersistentLayout)
+        /// 呼叫的是同一個方法,所以兩條路徑的隱藏語意天生一致,不會互相打架。
+        /// </remarks>
         private uint DetermineColor(PersistentLocation location, IReadOnlyList<PersistentLocation> visibleLocations)
         {
             switch (location.Type)
             {
-                // 已經在物件表裡的陷阱是「實際存在」的實體(全景把它們顯形了),一律照畫;
-                // 被隱藏的只有資料庫裡的歷史/潛在點位。
                 case MemoryLocation.EType.Trap
-                    when !_territoryState.ShouldHideTraps(_configuration) ||
-                         visibleLocations.Any(x => x == location):
+                    when !_territoryState.ShouldHideTraps(_configuration):
                     return P.Config.TrapColor.ToUint();
                 case MemoryLocation.EType.Hoard
-                    when !_territoryState.ShouldHideHoardCoffers(_configuration) ||
-                         visibleLocations.Any(x => x == location):
+                    when !_territoryState.ShouldHideHoardCoffers(_configuration):
                     return _configuration.DeepDungeons.HoardCoffers.Color;
                 default:
                     return RenderData.ColorInvisible;
