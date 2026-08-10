@@ -36,6 +36,20 @@ namespace Pal.Client.Floors
         private readonly RemoteApi _remoteApi;
         private readonly PomanderSensor _pomanderSensor;
 
+        // 上一幀算出來的「本層是否該隱藏陷阱/受詛咒藏寶箱」。
+        // null ＝ 剛換區還沒有基準,此時只採納現值、不寫 log 也不強制重建。
+        private bool? _lastHideTraps;
+        private bool? _lastHideHoardCoffers;
+        private int _pomanderRedrawCount;
+        private bool _pomanderRedrawCapLogged;
+
+        /// <summary>
+        /// 同一個區域內因魔陶器翻轉而重建圖層的次數上限。正常一趟(10 層)頂多數十次;
+        /// 超過就代表旗標判讀有問題,退回原本的就地改色 —— 失敗方向是「維持現狀」,
+        /// 不會變成每幀重建。
+        /// </summary>
+        private const int MaxPomanderRedrawsPerTerritory = 100;
+
         internal Queue<IQueueOnFrameworkThread> EarlyEventQueue { get; } = new();
         internal Queue<IQueueOnFrameworkThread> LateEventQueue { get; } = new();
         internal ConcurrentQueue<nint> NextUpdateObjects { get; } = new();
@@ -109,6 +123,10 @@ namespace Pal.Client.Floors
                     _territoryState.PomanderOfIntuition = PomanderState.Inactive;
                     PluginLog.Debug($"PomanderOfIntuition is now set to inactive {_territoryState.PomanderOfIntuition}");
                     recreateLayout = true;
+                    _lastHideTraps = null;
+                    _lastHideHoardCoffers = null;
+                    _pomanderRedrawCount = 0;
+                    _pomanderRedrawCapLogged = false;
                     _debugState.Reset();
                     Plugin.P._rootScope!.ServiceProvider.GetRequiredService<RenderAdapter>()._implementation.UpdateExitElement();
                     ExternalUtils.UpdateBronzeTreasureCoffers(_clientState.TerritoryType);
@@ -132,6 +150,12 @@ namespace Pal.Client.Floors
                     recreateLayout = true;
                     _renderAdapter.RequireRedraw = false;
                 }
+
+                // 魔陶器旗標翻轉時要重算顏色。咒印解除把陷阱清掉不會產生任何「位置變動」,
+                // 所以原本沒有任何東西會在用藥當下要求重建 —— 這裡補上那個觸發點。
+                // 放在 IsReady 之後:樓層還沒載好時不比對,基準留著,載好的第一幀照樣看得到差異。
+                if (CheckPomanderVisibilityTransitions())
+                    recreateLayout = true;
 
                 ETerritoryType territoryType = (ETerritoryType)_territoryState.LastTerritory;
                 MemoryTerritory memoryTerritory = _floorService.GetTerritoryIfReady(territoryType)!;
@@ -161,6 +185,93 @@ namespace Pal.Client.Floors
         }
 
         #region Render Markers
+
+        /// <summary>
+        /// 比對「本層是否該隱藏陷阱/受詛咒藏寶箱」與上一幀的差異,翻轉時要求整層重建。
+        /// 轉換極稀少(只有用藥、換層、改設定會發生),重建成本可接受。
+        /// </summary>
+        /// <returns>這一幀是否需要重建圖層。</returns>
+        private bool CheckPomanderVisibilityTransitions()
+        {
+            bool hideTraps = _territoryState.ShouldHideTraps(_configuration);
+            bool hideHoardCoffers = _territoryState.ShouldHideHoardCoffers(_configuration);
+
+            // 這一區的第一次評估:把幾個總開關的實際值印出來。
+            // 沒有這行的話,「使用者把總開關關掉了」與「偵測從來沒觸發」在 log 裡長得一模一樣
+            // —— 前者永遠不會產生任何翻轉,也就永遠不會寫出下面那幾行轉換 log。
+            if (_lastHideTraps == null || _lastHideHoardCoffers == null)
+            {
+                _logger.LogInformation(
+                    "PalacePal:進入 {Territory},魔陶器隱藏設定:陷阱總開關={TrapGate}"
+                    + "(咒印解除={OnSafety}、全景={OnSight}),受詛咒藏寶箱總開關={HoardGate}"
+                    + "(感知寶藏={OnIntuition});目前判定 隱藏陷阱={HideTraps}、隱藏藏寶箱={HideHoard}。",
+                    (ETerritoryType)_territoryState.LastTerritory,
+                    _configuration.DeepDungeons.Traps.OnlyVisibleAfterPomander,
+                    P.Config.HideTrapsOnSafety,
+                    P.Config.HideTrapsOnSight,
+                    _configuration.DeepDungeons.HoardCoffers.OnlyVisibleAfterPomander,
+                    P.Config.HideHoardOnIntuition,
+                    hideTraps, hideHoardCoffers);
+            }
+
+            bool changed = false;
+
+            if (_lastHideTraps != hideTraps)
+            {
+                if (_lastHideTraps != null)
+                {
+                    changed = true;
+                    _logger.LogInformation(
+                        "PalacePal:陷阱標記隱藏狀態 {Old} -> {New}(咒印解除 結構={SafetyStruct}/聊天={SafetyChat},"
+                        + "全景 結構={SightStruct}/聊天={SightChat},樓層 {Floor}),重建圖層。",
+                        _lastHideTraps, hideTraps,
+                        _territoryState.SafetyActiveFromMemory,
+                        _territoryState.PomanderOfSight == PomanderState.PomanderOfSafetyUsed,
+                        _territoryState.SightActiveFromMemory,
+                        _territoryState.PomanderOfSight == PomanderState.Active,
+                        _pomanderSensor.CurrentFloor);
+                }
+
+                _lastHideTraps = hideTraps;
+            }
+
+            if (_lastHideHoardCoffers != hideHoardCoffers)
+            {
+                if (_lastHideHoardCoffers != null)
+                {
+                    changed = true;
+                    _logger.LogInformation(
+                        "PalacePal:受詛咒藏寶箱標記隱藏狀態 {Old} -> {New}(感知寶藏 結構={IntuitionStruct}/"
+                        + "聊天={IntuitionChat},樓層 {Floor}),重建圖層。",
+                        _lastHideHoardCoffers, hideHoardCoffers,
+                        _territoryState.IntuitionActiveFromMemory,
+                        _territoryState.PomanderOfIntuition,
+                        _pomanderSensor.CurrentFloor);
+                }
+
+                _lastHideHoardCoffers = hideHoardCoffers;
+            }
+
+            if (!changed)
+                return false;
+
+            if (_pomanderRedrawCount >= MaxPomanderRedrawsPerTerritory)
+            {
+                if (!_pomanderRedrawCapLogged)
+                {
+                    _pomanderRedrawCapLogged = true;
+                    _logger.LogInformation(
+                        "PalacePal:本區的魔陶器隱藏狀態已翻轉超過 {Count} 次,超出合理範圍,"
+                        + "不再因翻轉而重建圖層(退回既有的就地改色),換區後重新計數。",
+                        MaxPomanderRedrawsPerTerritory);
+                }
+
+                return false;
+            }
+
+            _pomanderRedrawCount++;
+            return true;
+        }
 
         private void HandlePersistentLocations(ETerritoryType territoryType,
             IReadOnlyList<PersistentLocation> visiblePersistentMarkers,

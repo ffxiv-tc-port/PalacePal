@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
@@ -37,6 +38,9 @@ namespace Pal.Client.Floors
 
         private byte _lastFloor;
 
+        /// <summary>目前所在的深宮樓層(0 ＝ 尚未得知)。純診斷用。</summary>
+        public byte CurrentFloor => _lastFloor;
+
         // 結構回報的原始值(未套用樓層閂鎖)
         private bool _rawSafety;
         private bool _rawSight;
@@ -52,6 +56,16 @@ namespace Pal.Client.Floors
         private bool _loggedSafety;
         private bool _loggedSight;
         private bool _loggedIntuition;
+
+        // 16 個欄位的原始位元組快照(道具/數量/旗標各一 byte),只在內容真的變了才寫 log。
+        // 這份原值是「Flags bit1 在台服是不是 IsActive」唯一的實機量測手段。
+        private readonly byte[] _lastSlotBytes = new byte[SlotCount * 3];
+        private bool _slotSnapshotValid;
+        private int _slotLogsThisFloor;
+        private bool _slotLogCapLogged;
+
+        /// <summary>同一層最多輸出幾行原值。純防呆,正常一層只會有個位數次變動。</summary>
+        private const int MaxSlotLogsPerFloor = 30;
 
         public PomanderSensor(
             ILogger<PomanderSensor> logger,
@@ -105,6 +119,10 @@ namespace Pal.Client.Floors
             }
 
             UpdateFloor(dd);
+
+            // 原值診斷放在所有判斷之前:就算我們對旗標的解讀是錯的(或已進入不信任模式),
+            // 也還是要能從 log 看到遊戲結構實際回報了什麼。
+            LogRawSlots(dd);
 
             if (_distrusted)
             {
@@ -186,6 +204,11 @@ namespace Pal.Client.Floors
             byte previous = _lastFloor;
             _lastFloor = floor;
 
+            // 換層(含剛進場)一律重新輸出一次欄位原值,並重置本層的輸出額度。
+            _slotSnapshotValid = false;
+            _slotLogsThisFloor = 0;
+            _slotLogCapLogged = false;
+
             if (previous == 0)
                 return; // 剛進場,不是換層
 
@@ -201,6 +224,63 @@ namespace Pal.Client.Floors
             _territoryState.PomanderOfSight = PomanderState.Inactive;
             if (_territoryState.PomanderOfIntuition == PomanderState.FoundOnCurrentFloor)
                 _territoryState.PomanderOfIntuition = PomanderState.Inactive;
+        }
+
+        /// <summary>
+        /// 把 16 個欄位的原始位元組(道具/數量/旗標)緊湊印成一行。
+        /// 觸發條件只有兩個:①每層第一次進入 ②原始位元組真的變了 —— 同一層維持同一個狀態
+        /// 不會重複刷版。沒有變動時這個方法只做 48 次位元組比較,不配置任何記憶體。
+        /// </summary>
+        private void LogRawSlots(InstanceContentDeepDungeon* dd)
+        {
+            bool changed = !_slotSnapshotValid;
+            for (int i = 0; i < SlotCount; i++)
+            {
+                var item = dd->Items[i];
+                int o = i * 3;
+                if (_lastSlotBytes[o] != item.ItemId ||
+                    _lastSlotBytes[o + 1] != item.Count ||
+                    _lastSlotBytes[o + 2] != item.Flags)
+                {
+                    _lastSlotBytes[o] = item.ItemId;
+                    _lastSlotBytes[o + 1] = item.Count;
+                    _lastSlotBytes[o + 2] = item.Flags;
+                    changed = true;
+                }
+            }
+
+            _slotSnapshotValid = true;
+            if (!changed)
+                return;
+
+            if (_slotLogsThisFloor >= MaxSlotLogsPerFloor)
+            {
+                if (!_slotLogCapLogged)
+                {
+                    _slotLogCapLogged = true;
+                    _logger.LogInformation(
+                        "PalacePal:本層的深宮欄位原值已輸出 {Max} 行,本層不再輸出(換層後重新計數)。",
+                        MaxSlotLogsPerFloor);
+                }
+
+                return;
+            }
+
+            _slotLogsThisFloor++;
+
+            var sb = new StringBuilder(SlotCount * 12);
+            for (int i = 0; i < SlotCount; i++)
+            {
+                int o = i * 3;
+                sb.Append(i.ToString("D2")).Append('=')
+                    .Append(_lastSlotBytes[o].ToString("X2")).Append('/')
+                    .Append(_lastSlotBytes[o + 1].ToString("X2")).Append('/')
+                    .Append(_lastSlotBytes[o + 2].ToString("X2")).Append(' ');
+            }
+
+            _logger.LogInformation(
+                "PalacePal:深宮欄位原值(深宮 {DeepDungeonId},樓層 {Floor};格式 欄位=道具/數量/旗標,值為十六進位;旗標 bit0=可用、bit1=生效中):{Slots}",
+                dd->DeepDungeonId, _lastFloor, sb.ToString());
         }
 
         private void LogTransition(ref bool previous, bool current, string name)
@@ -231,6 +311,9 @@ namespace Pal.Client.Floors
             _loggedSafety = false;
             _loggedSight = false;
             _loggedIntuition = false;
+            _slotSnapshotValid = false;
+            _slotLogsThisFloor = 0;
+            _slotLogCapLogged = false;
             PublishInactive();
         }
 
@@ -266,6 +349,22 @@ namespace Pal.Client.Floors
                         "PalacePal:DeepDungeon 資料表第 {Id} 列找不到咒印解除/全景/感知寶藏的欄位對應"
                         + "(本服可能尚未開放這座深宮),這座深宮不使用結構旗標偵測。", deepDungeonId);
                     slots = null;
+                }
+                else
+                {
+                    // 每座深宮只印一次(算完就進快取)。這行是解讀上面那行「欄位原值」的對照表:
+                    // 沒有它就無法判斷某個欄位的旗標變化對應到哪個魔陶器。
+                    var sb = new StringBuilder(SlotCount * 8);
+                    for (int i = 0; i < limit; i++)
+                        sb.Append(i.ToString("D2")).Append('=')
+                            .Append(row.PomanderSlot[i].RowId).Append(' ');
+
+                    _logger.LogInformation(
+                        "PalacePal:深宮 {Id} 的欄位對應(欄位=DeepDungeonItem 列號):{Mapping};咒印解除=欄位 {Safety},全景=欄位 {Sight},感知寶藏=欄位 {Intuition}",
+                        deepDungeonId, sb.ToString(),
+                        Array.IndexOf(slots, EPomander.Safety),
+                        Array.IndexOf(slots, EPomander.Sight),
+                        Array.IndexOf(slots, EPomander.Intuition));
                 }
             }
             else
