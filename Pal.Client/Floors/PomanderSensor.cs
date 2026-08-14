@@ -18,6 +18,21 @@ namespace Pal.Client.Floors
     ///
     /// 欄位索引 -> 魔陶器的對應取自 DeepDungeon 資料表的 PomanderSlot 欄位(跟隨本服資料),
     /// 不寫死欄位索引;查不到對應時一律當作「沒有偵測到」,寧可多畫也不要讓標記憑空消失。
+    ///
+    /// 🔴 **這條路徑對「咒印解除」與「全景」永遠偵測不到,那不是 bug,是結構本身沒有這個訊號。**
+    /// 2026-08-15 用實機 log 的 1422 筆 16 槽原值 dump ＋ NecroLens 的 545 筆用藥記錄逐筆對照:
+    ///   ・Flags bit1 只有「留有持續效果」的 6 種會置位 ——
+    ///     寶箱增加/改變敵人/減少敵人(下一層生效)、運氣上升(本層持續)、
+    ///     感知寶藏(挖到為止)、復生(用掉為止)。
+    ///   ・咒印解除用了 34 次、全景用了 39 次,對應槽位(欄位 0 與 1)的 Flags
+    ///     **一次都沒有出現 bit1**:欄位 0 觀測到 18 種相異位元組、欄位 1 觀測到 22 種,
+    ///     每一種的 bit1 都是 0。這兩個是**瞬時效果**(當下清掉陷阱／點亮地圖就結束),
+    ///     director 沒有東西要繼續追蹤,自然不會有「生效中」旗標。
+    ///   ・同理,強化自身/強化防禦/隱形/弱化敵人/石化敵人/解咒/魔法效果解除/形態變化
+    ///     也都不置位(共 313 次用藥,0 次)。
+    /// ⇒ 這兩個魔陶器只能靠 ChatService 的系統訊息偵測(那條路徑 2026-08-15 已修好);
+    ///   這裡照樣把三種都讀進來是刻意的:成本是 0,而且哪天遊戲改成有旗標就自動接上,
+    ///   兩邊在 TerritoryState 是 OR 的關係,不會互相蓋掉。
     /// </summary>
     internal sealed unsafe class PomanderSensor
     {
@@ -186,13 +201,7 @@ namespace Pal.Client.Floors
             // 因此不套用樓層閂鎖;「已找到」的收斂沿用 ChatService 既有的 FoundOnCurrentFloor。
             bool intuition = rawIntuition;
 
-            LogTransition(ref _loggedSafety, safety, "咒印解除");
-            LogTransition(ref _loggedSight, sight, "全景");
-            LogTransition(ref _loggedIntuition, intuition, "感知寶藏");
-
-            _territoryState.SafetyActiveFromMemory = safety;
-            _territoryState.SightActiveFromMemory = sight;
-            _territoryState.IntuitionActiveFromMemory = intuition;
+            Publish(safety, sight, intuition);
         }
 
         private void UpdateFloor(InstanceContentDeepDungeon* dd)
@@ -279,7 +288,9 @@ namespace Pal.Client.Floors
             }
 
             _logger.LogInformation(
-                "PalacePal:深宮欄位原值(深宮 {DeepDungeonId},樓層 {Floor};格式 欄位=道具/數量/旗標,值為十六進位;旗標 bit0=可用、bit1=生效中):{Slots}",
+                "PalacePal:深宮欄位原值(深宮 {DeepDungeonId},樓層 {Floor};格式 欄位=道具/數量/旗標,值為十六進位;"
+                + "旗標 bit0=可用、bit1=生效中【只有留有持續效果的魔陶器會設,咒印解除/全景這類瞬時效果不設】,"
+                + "其餘位元用途不明且逐欄位不同):{Slots}",
                 dd->DeepDungeonId, _lastFloor, sb.ToString());
         }
 
@@ -293,28 +304,40 @@ namespace Pal.Client.Floors
                 name, current ? "生效中" : "已結束", _lastFloor);
         }
 
-        private void PublishInactive()
+        /// <summary>
+        /// 所有對外狀態都走這裡,讓「翻轉才寫 log」與「寫進 TerritoryState」永遠是同一組動作。
+        /// ⚠️ 之前 PublishInactive/Reset 是直接寫欄位、繞過 LogTransition,結果離開深宮或
+        /// 進入不信任模式時只會靜默轉成 false ——「已結束」那一行從來不會印,
+        /// log 上看起來就像效果一直開著(實測 dalamud_001.log 有 4 處連續兩筆「生效中」)。
+        /// </summary>
+        private void Publish(bool safety, bool sight, bool intuition)
         {
-            _territoryState.SafetyActiveFromMemory = false;
-            _territoryState.SightActiveFromMemory = false;
-            _territoryState.IntuitionActiveFromMemory = false;
+            LogTransition(ref _loggedSafety, safety, "咒印解除");
+            LogTransition(ref _loggedSight, sight, "全景");
+            LogTransition(ref _loggedIntuition, intuition, "感知寶藏");
+
+            _territoryState.SafetyActiveFromMemory = safety;
+            _territoryState.SightActiveFromMemory = sight;
+            _territoryState.IntuitionActiveFromMemory = intuition;
         }
+
+        private void PublishInactive() => Publish(false, false, false);
 
         /// <summary>離開深宮(或未在深宮內)時清空狀態。</summary>
         public void Reset()
         {
+            // 先發布再清樓層:這樣「已結束」那一行帶得到我們原本在哪一層。
+            // Publish 內的 LogTransition 會順手把 _loggedXxx 歸位,不必再各自指派一次。
+            PublishInactive();
+
             _lastFloor = 0;
             _rawSafety = false;
             _rawSight = false;
             _safetyStale = false;
             _sightStale = false;
-            _loggedSafety = false;
-            _loggedSight = false;
-            _loggedIntuition = false;
             _slotSnapshotValid = false;
             _slotLogsThisFloor = 0;
             _slotLogCapLogged = false;
-            PublishInactive();
         }
 
         /// <summary>

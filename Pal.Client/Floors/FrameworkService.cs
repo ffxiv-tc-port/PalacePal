@@ -118,10 +118,17 @@ namespace Pal.Client.Floors
                     NextUpdateObjects.Clear();
 
                     _floorService.ChangeTerritory(_territoryState.LastTerritory);
+
+                    // 換區一律把兩個魔陶器狀態歸零。
+                    // 原本這裡是兩行 PluginLog.Debug,印的內容是**常數**(剛指派完 Inactive,
+                    // 再把它印出來永遠是「is now set to inactive Inactive」),
+                    // 實機 log 累積了 9478 行完全沒有資訊量的輸出。改成一行、帶上真正會變的區域,
+                    // 而且「進入深宮時的完整狀態」下面 CheckPomanderVisibilityTransitions 已經
+                    // 以 Information 印過一次,這行維持 Debug 就夠。
                     _territoryState.PomanderOfSight = PomanderState.Inactive;
-                    PluginLog.Debug($"PomanderOfSight is now set to inactive {_territoryState.PomanderOfSight}");
                     _territoryState.PomanderOfIntuition = PomanderState.Inactive;
-                    PluginLog.Debug($"PomanderOfIntuition is now set to inactive {_territoryState.PomanderOfIntuition}");
+                    PluginLog.Debug(
+                        $"PalacePal: territory -> {(ETerritoryType)_territoryState.LastTerritory}, pomander state reset");
                     recreateLayout = true;
                     _lastHideTraps = null;
                     _lastHideHoardCoffers = null;
