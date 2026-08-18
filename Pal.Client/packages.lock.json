@@ -23,12 +23,6 @@
         "resolved": "1.2.25",
         "contentHash": "xCXiw7BCxHJ8pF6wPepRUddlh2dlQlbr81gXA72hdk4FLHkKXas7EH/n+fk5UCA/YfMqG1Z6XaPiUjDbUNBUzg=="
       },
-      "ECommons": {
-        "type": "Direct",
-        "requested": "[3.0.1.10, )",
-        "resolved": "3.0.1.10",
-        "contentHash": "EHFFs6YlI+DQemaGCyVvcLSYbkDFXds4yndVhS6V96TJ02bFrUiERx6C4erYiYZ25V9C3JblDHcRIhGLfAivuQ=="
-      },
       "GitInfo": {
         "type": "Direct",
         "requested": "[2.3.0, )",
@@ -304,6 +298,9 @@
         "dependencies": {
           "System.Text.Encodings.Web": "7.0.0"
         }
+      },
+      "ecommons": {
+        "type": "Project"
       },
       "pal.common": {
         "type": "Project"

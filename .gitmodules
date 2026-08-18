@@ -1,3 +1,6 @@
 [submodule "PunishLib"]
 	path = PunishLib
 	url = https://github.com/ffxiv-tc-port/PunishLib
+[submodule "ECommons"]
+	path = ECommons
+	url = https://github.com/ffxiv-tc-port/ECommons.git
