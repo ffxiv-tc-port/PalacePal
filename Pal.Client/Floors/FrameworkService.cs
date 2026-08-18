@@ -631,7 +631,7 @@ namespace Pal.Client.Floors
                 if (obj == null)
                     continue;
 
-                switch (obj.DataId)
+                switch (obj.BaseId)
                 {
                     // 已現形陷阱的事件物件 DataId：2007182~2007186 死者宮殿、2009504 天之御柱、
                     // 2013284 正統優雷卡。EO 這一個原本漏掉，所以在正統優雷卡裡永遠記不到陷阱
