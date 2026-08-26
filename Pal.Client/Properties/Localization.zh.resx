@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -118,412 +118,412 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Palace_Pal" xml:space="preserve">
-    <value>Palace Pal</value>
+    <value>死者宮殿夥伴</value>
     <comment>Plugin Name</comment>
   </data>
   <data name="PalaceOfTheDead" xml:space="preserve">
-    <value>Palace of the Dead</value>
+    <value>死者宮殿</value>
   </data>
   <data name="HeavenOnHigh" xml:space="preserve">
-    <value>Heaven on High</value>
+    <value>天之御柱</value>
   </data>
   <data name="EurekaOrthos" xml:space="preserve">
-    <value>Eureka Orthos</value>
+    <value>正統優雷卡</value>
   </data>
   <data name="Save" xml:space="preserve">
-    <value>Save</value>
+    <value>儲存</value>
   </data>
   <data name="SaveAndClose" xml:space="preserve">
-    <value>Save &amp; Close</value>
+    <value>儲存並關閉</value>
   </data>
   <data name="Error_FirstTimeSetupRequired" xml:space="preserve">
-    <value>Please finish the initial setup first.</value>
+    <value>請先完成初始設定。</value>
     <comment>Before using any /pal command, the initial setup/agreeement needs to be completed.</comment>
   </data>
   <data name="Error_LoadFailed" xml:space="preserve">
-    <value>Plugin could not be loaded: {0}</value>
+    <value>外掛程式無法載入：{0}</value>
     <comment>Shown when the plugin fails to load, with the placeholder filled with the exception message.</comment>
   </data>
   <data name="Error_WrongRepository" xml:space="preserve">
-    <value>Please install this plugin from the official repository at {0} to continue using it.</value>
+    <value>請從官方套件庫 {0} 安裝此外掛程式後才能繼續使用。</value>
   </data>
   <data name="Command_pal_HelpText" xml:space="preserve">
-    <value>Open the configuration window</value>
+    <value>開啟設定視窗</value>
     <comment>Help text for the /pal command, shown in the Plugin Installer</comment>
   </data>
   <data name="Command_pal_UnknownSubcommand" xml:space="preserve">
-    <value>Unknown sub-command '{0}' for '{1}'.</value>
+    <value>「{1}」的子指令「{0}」未知。</value>
     <comment>Error shown when using '/pal xxx' with an unknown argument 'xxx'.</comment>
   </data>
   <data name="Command_pal_stats_CurrentFloor" xml:space="preserve">
-    <value>You can view statistics for the floor you're currently on by opening the 'Debug' tab in the configuration window.</value>
+    <value>你可以在設定視窗的「除錯」分頁中查看目前所在樓層的統計資料。</value>
   </data>
   <data name="Command_pal_stats_UnableToFetchStatistics" xml:space="preserve">
-    <value>Unable to fetch statistics.</value>
+    <value>無法取得統計資料。</value>
     <comment>Shown when /pal stats produces a server-side error, and the statistics window can't be loaded.</comment>
   </data>
   <data name="Error_CommandFailed" xml:space="preserve">
-    <value>Command could not be executed: {0}</value>
+    <value>指令執行失敗：{0}</value>
     <comment>Shown when '/pal ...' fails, with the placeholder filled with the exception message.</comment>
   </data>
   <data name="ConnectionSuccessful" xml:space="preserve">
-    <value>Connection successful.</value>
+    <value>連線成功。</value>
   </data>
   <data name="ConnectionError_NotOnline" xml:space="preserve">
-    <value>You are not online.</value>
+    <value>你目前未連線。</value>
     <comment>Shown if you attempt to connect to the server while you have selected 'never upload discoveries, only show traps and coffers i found myself'</comment>
   </data>
   <data name="ConnectionError_OldVersion" xml:space="preserve">
-    <value>Your version of Palace Pal is outdated, please update the plugin using the Plugin Installer.</value>
+    <value>你的死者宮殿夥伴版本過舊，請使用外掛程式安裝器更新。</value>
     <comment>Shown if the version is too old to create an account or log in.</comment>
   </data>
   <data name="ConnectionError_CreateAccountFailed" xml:space="preserve">
-    <value>Could not create account ({0}).</value>
+    <value>無法建立帳號（{0}）。</value>
     <comment>Creating an account failed with an error code, but there is no (translated) error message for it.</comment>
   </data>
   <data name="ConnectionError_CreateAccountReturnedNoId" xml:space="preserve">
-    <value>No account-id after account was attempted to be created.</value>
+    <value>嘗試建立帳號後未取得帳號 ID。</value>
     <comment>If the creation of an account was successful, we expect an account-id to be returned so we can log in. If this happens, the server sent an invalid response.</comment>
   </data>
   <data name="ConnectionError_InvalidAccountId" xml:space="preserve">
-    <value>Invalid account id.</value>
+    <value>無效的帳號 ID。</value>
     <comment>The account id used was not found on the server.</comment>
   </data>
   <data name="ConnectionError_LoginFailed" xml:space="preserve">
-    <value>Could not log in ({0}).</value>
+    <value>無法登入（{0}）。</value>
     <comment>Logging in failed with an error code, but there is no (translated) error message for it.</comment>
   </data>
   <data name="ConnectionError_LoginReturnedNoToken" xml:space="preserve">
-    <value>No login information available.</value>
+    <value>沒有可用的登入資訊。</value>
     <comment>The server sent no valid client token, even though the login was successful.</comment>
   </data>
   <data name="ConnectionError_CouldNotConnectToServer" xml:space="preserve">
-    <value>Could not connect to server: {0}</value>
+    <value>無法連線到伺服器：{0}</value>
   </data>
   <data name="ConfigTab_DeepDungeons" xml:space="preserve">
-    <value>Deep Dungeons</value>
+    <value>秘境探索</value>
   </data>
   <data name="Config_Traps_Show" xml:space="preserve">
-    <value>Show traps</value>
+    <value>顯示陷阱</value>
   </data>
   <data name="Config_Traps_Color" xml:space="preserve">
-    <value>Trap color</value>
+    <value>陷阱顏色</value>
   </data>
   <data name="Config_Traps_HideImpossible" xml:space="preserve">
-    <value>Hide traps not on current floor</value>
+    <value>隱藏不在目前樓層的陷阱</value>
     <comment>When a trap has no chance of appearing (after a pomander of safety/sight is used), hide it.</comment>
   </data>
   <data name="Config_Traps_HideImpossible_ToolTip" xml:space="preserve">
-    <value>When using a Pomander of Sight, only the actual trap locations are visible, all other traps are hidden.
-When using a Pomander of Safety, all traps are hidden.</value>
+    <value>使用鑑知香丸後，只會顯示實際的陷阱位置，其餘陷阱皆會隱藏。
+使用安全香丸後，所有陷阱皆會隱藏。</value>
   </data>
   <data name="Config_HoardCoffers_Show" xml:space="preserve">
-    <value>Show hoard coffers</value>
+    <value>顯示藏寶箱</value>
   </data>
   <data name="Config_HoardCoffers_Color" xml:space="preserve">
-    <value>Hoard Coffer color</value>
+    <value>藏寶箱顏色</value>
   </data>
   <data name="Config_HoardCoffers_HideImpossible" xml:space="preserve">
-    <value>Hide hoard coffers not on current floor</value>
+    <value>隱藏不在目前樓層的藏寶箱</value>
     <comment>When a hoard coffer has no chance of appearing (after a pomander of safety/sight is used), hide it.</comment>
   </data>
   <data name="Config_HoardCoffers_HideImpossible_ToolTip" xml:space="preserve">
-    <value>When using a Pomander of intuition, only the actual hoard coffer location is visible, all other (potential) hoard coffers are hidden.</value>
+    <value>使用直覺香丸後，只會顯示實際的藏寶箱位置，其餘（可能的）藏寶箱皆會隱藏。</value>
   </data>
   <data name="Config_SilverCoffer_Show" xml:space="preserve">
-    <value>Display Silver Treasure Coffer Locations</value>
+    <value>顯示銀寶箱位置</value>
   </data>
   <data name="Config_SilverCoffers_ToolTip" xml:space="preserve">
-    <value>Shows nearby silver coffers (gear upgrades and magicites) on the current floor.
-This is not synchronized with other players and not saved between floors/runs.</value>
+    <value>顯示目前樓層附近的銀寶箱（裝備強化與魔晶石）。
+此資訊不會與其他玩家同步，也不會在跨樓層/跨次數之間保存。</value>
   </data>
   <data name="Config_SilverCoffer_Color" xml:space="preserve">
-    <value>Silver Coffer color</value>
+    <value>銀寶箱顏色</value>
   </data>
   <data name="Config_SilverCoffer_Filled" xml:space="preserve">
-    <value>Draw filled</value>
+    <value>繪製填滿圓形</value>
     <comment>Whether silver coffers should only be drawn with the circle outline or as filled circle.</comment>
   </data>
   <data name="Config_GoldCoffer_Show" xml:space="preserve">
-    <value>Display Gold Treasure Coffer Locations</value>
+    <value>顯示金寶箱位置</value>
   </data>
   <data name="Config_GoldCoffers_ToolTip" xml:space="preserve">
-    <value>Shows nearby gold coffers (containing pomanders) on the current floor.
-This is not synchronized with other players and not saved between floors/runs.</value>
+    <value>顯示目前樓層附近的金寶箱（內含香丸）。
+此資訊不會與其他玩家同步，也不會在跨樓層/跨次數之間保存。</value>
   </data>
   <data name="Config_GoldCoffer_Color" xml:space="preserve">
-    <value>Gold Coffer color</value>
+    <value>金寶箱顏色</value>
   </data>
   <data name="Config_GoldCoffer_Filled" xml:space="preserve">
-    <value>Draw filled</value>
+    <value>繪製填滿圓形</value>
     <comment>Whether gold coffers should only be drawn with the circle outline or as filled circle.</comment>
   </data>
   <data name="ConfigTab_Community" xml:space="preserve">
-    <value>Community</value>
+    <value>社群</value>
   </data>
   <data name="Config_TestConnection" xml:space="preserve">
-    <value>Test Connection</value>
+    <value>測試連線</value>
   </data>
   <data name="Config_TestConnection_Connecting" xml:space="preserve">
-    <value>Testing...</value>
+    <value>測試中...</value>
     <comment>When clicking on the 'Test Connection' button, this is shown until a success/error message is available.</comment>
   </data>
   <data name="ConfigTab_Import" xml:space="preserve">
-    <value>Import</value>
+    <value>匯入</value>
   </data>
   <data name="Config_ImportExplanation1" xml:space="preserve">
-    <value>Using an export is useful if you're unable to connect to the server, or don't wish to share your findings.</value>
+    <value>如果你無法連接伺服器，或不想分享你的發現，匯入資料會很有幫助。</value>
   </data>
   <data name="Config_ImportExplanation2" xml:space="preserve">
-    <value>Exports are (currently) generated manually, and they only include traps and hoard coffers encountered by 5 or more people. This may lead to higher floors having very sporadic coverage, but commonly run floors (e.g. PotD 51-60, HoH 21-30) are closer to complete.</value>
+    <value>匯出檔（目前）是手動產生的，僅包含 5 人以上玩家共同發現的陷阱與藏寶箱。這可能導致較高樓層的資料較稀疏，但常見樓層（例如死者宮殿 51-60 層、天之御柱 21-30 層）的資料會較完整。</value>
   </data>
   <data name="Config_ImportExplanation3" xml:space="preserve">
-    <value>If you aren't offline, importing a file won't have any noticeable effect.</value>
+    <value>若你並非離線狀態，匯入檔案不會有明顯效果。</value>
   </data>
   <data name="Config_ImportDownloadLocation" xml:space="preserve">
-    <value>Exports are available from {0} (as *.pal files).</value>
+    <value>匯出檔可從 {0} 取得（*.pal 檔案）。</value>
   </data>
   <data name="Config_Import_VisitGitHub" xml:space="preserve">
-    <value>Visit GitHub</value>
+    <value>前往 GitHub</value>
   </data>
   <data name="Config_SelectImportFile" xml:space="preserve">
-    <value>File to Import:</value>
+    <value>要匯入的檔案：</value>
   </data>
   <data name="Config_SelectImportFile_Hint" xml:space="preserve">
-    <value>Path to *.pal file</value>
+    <value>*.pal 檔案路徑</value>
     <comment>When importing a file, this is the hint that shows up in the 'path' input box while no file has been selected.</comment>
   </data>
   <data name="Config_StartImport" xml:space="preserve">
-    <value>Start Import</value>
+    <value>開始匯入</value>
   </data>
   <data name="Config_UndoImportExplanation1" xml:space="preserve">
-    <value>Your last import was on {0}, which added the trap/hoard coffer database from {1} created on {2:d}.</value>
+    <value>你上次匯入的時間是 {0}，新增了於 {2:d} 建立的 {1} 陷阱/藏寶箱資料庫。</value>
   </data>
   <data name="Config_UndoImportExplanation2" xml:space="preserve">
-    <value>If you think that was a mistake, you can remove all locations only found in the import (any location you've seen yourself is not changed).</value>
+    <value>如果你認為那是個錯誤，可以移除所有僅來自匯入的位置資料（你自己發現的位置不會受影響）。</value>
   </data>
   <data name="Config_UndoImport" xml:space="preserve">
-    <value>Undo Import</value>
+    <value>復原匯入</value>
   </data>
   <data name="ConfigTab_Export" xml:space="preserve">
-    <value>Export</value>
+    <value>匯出</value>
   </data>
   <data name="Config_ExportSource" xml:space="preserve">
-    <value>Export all markers from {0}:</value>
+    <value>從 {0} 匯出所有標記：</value>
   </data>
   <data name="Config_Export_SaveAs" xml:space="preserve">
-    <value>Save as:</value>
+    <value>另存為：</value>
   </data>
   <data name="Config_StartExport" xml:space="preserve">
-    <value>Start Export</value>
+    <value>開始匯出</value>
   </data>
   <data name="ConfigTab_Renderer" xml:space="preserve">
-    <value>Renderer</value>
+    <value>繪製方式</value>
     <comment>Configuration tab to select Splatoon or Simple as rendering backend</comment>
   </data>
   <data name="Config_SelectRenderBackend" xml:space="preserve">
-    <value>Select which render backend to use for markers:</value>
+    <value>選擇標記使用的繪製後端：</value>
   </data>
   <data name="Config_Renderer_Splatoon" xml:space="preserve">
     <value>Splatoon</value>
     <comment>Splatoon plugin. Do not localize.</comment>
   </data>
   <data name="Config_Renderer_Splatoon_Hint" xml:space="preserve">
-    <value>default, required Splatoon to be installed</value>
+    <value>預設值，需要安裝 Splatoon</value>
   </data>
   <data name="Config_Renderer_Simple" xml:space="preserve">
-    <value>Simple</value>
+    <value>簡易模式</value>
   </data>
   <data name="Config_Renderer_Simple_Hint" xml:space="preserve">
-    <value>experimental</value>
+    <value>實驗性功能</value>
   </data>
   <data name="Config_Splatoon_DrawCircles" xml:space="preserve">
-    <value>Draw trap &amp; coffer circles around self</value>
+    <value>在自己周圍繪製陷阱與寶箱圓圈</value>
     <comment>To test the Splatoon integration, you can draw markers around yourself.</comment>
   </data>
   <data name="ConfigTab_Debug" xml:space="preserve">
-    <value>Debug</value>
+    <value>除錯</value>
   </data>
   <data name="Config_Debug_NotInADeepDungeon" xml:space="preserve">
-    <value>You are NOT in a deep dungeon.</value>
+    <value>你目前不在秘境探索中。</value>
   </data>
   <data name="Statistics" xml:space="preserve">
-    <value>Statistics</value>
+    <value>統計資料</value>
   </data>
   <data name="Statistics_TerritoryId" xml:space="preserve">
-    <value>Id</value>
+    <value>編號</value>
   </data>
   <data name="Statistics_InstanceName" xml:space="preserve">
-    <value>Instance Name</value>
+    <value>副本名稱</value>
   </data>
   <data name="Statistics_Traps" xml:space="preserve">
-    <value>Traps</value>
+    <value>陷阱</value>
   </data>
   <data name="Statistics_HoardCoffers" xml:space="preserve">
-    <value>Hoard</value>
+    <value>藏寶箱</value>
   </data>
   <data name="Explanation_1" xml:space="preserve">
-    <value>Pal Palace will show where potential trap &amp; hoard coffer locations are.</value>
+    <value>死者宮殿夥伴會顯示潛在的陷阱與藏寶箱位置。</value>
   </data>
   <data name="Explanation_2" xml:space="preserve">
-    <value>To do this, using a pomander to reveal trap or treasure chest locations will save the position of what you see.</value>
+    <value>使用香丸來揭露陷阱或寶箱位置時，會儲存你所看到的位置。</value>
   </data>
   <data name="Explanation_3" xml:space="preserve">
-    <value>Ideally, we want to discover every potential trap and chest location in the game, but doing this alone is very tedious. Floor 51-60 has over 300 trap locations and over 290 coffer locations - and we don't know if that map is complete. Higher floors naturally see fewer runs, making solo attempts to map the place much harder.</value>
+    <value>理想上我們希望能發現遊戲中每一個潛在的陷阱與寶箱位置，但單靠一人完成非常繁瑣。51-60 層就有超過 300 個陷阱位置和超過 290 個寶箱位置——而我們甚至不確定地圖資料是否完整。較高樓層由於挑戰次數較少，單人繪製地圖會更加困難。</value>
   </data>
   <data name="Explanation_4" xml:space="preserve">
-    <value>You can decide whether you want to share traps and chests you find with the community, which likewise also will let you see chests and coffers found by other players. This can be changed at any time. No data regarding your FFXIV character or account is ever sent to our server.</value>
+    <value>你可以決定是否要與社群分享你發現的陷阱與寶箱，這麼做同時也能讓你看到其他玩家發現的寶箱位置。此設定可隨時更改。你的 FFXIV 角色或帳號資料絕不會傳送至我們的伺服器。</value>
   </data>
   <data name="Config_UploadMyDiscoveries_ShowOtherTraps" xml:space="preserve">
-    <value>Upload my discoveries, show traps &amp; coffers other players have discovered</value>
+    <value>上傳我的發現，並顯示其他玩家發現的陷阱與寶箱</value>
   </data>
   <data name="Config_NeverUploadDiscoveries_ShowMyTraps" xml:space="preserve">
-    <value>Never upload discoveries, show only traps and coffers I found myself</value>
+    <value>永不上傳發現，只顯示我自己發現的陷阱與寶箱</value>
   </data>
   <data name="Agreement_Warning1" xml:space="preserve">
-    <value>While this is not an automation feature, you're still very likely to break the ToS.</value>
+    <value>雖然這不是自動化功能，但你仍然很可能違反使用者條款。</value>
   </data>
   <data name="Agreement_Warning2" xml:space="preserve">
-    <value>Other players in your party can always see where you're standing/walking.</value>
+    <value>隊伍中的其他玩家隨時都能看到你所站立/移動的位置。</value>
   </data>
   <data name="Agreement_Warning3" xml:space="preserve">
-    <value>As such, please avoid mentioning it in-game and do not share videos/screenshots.</value>
+    <value>因此，請避免在遊戲內提及此功能，也不要分享相關影片或截圖。</value>
   </data>
   <data name="Agreement_UsingThisOnMyOwnRisk" xml:space="preserve">
-    <value>I understand I'm using this plugin on my own risk.</value>
+    <value>我了解使用此外掛程式的風險由我自行承擔。</value>
   </data>
   <data name="Agreement_ViewPluginAndServerSourceCode" xml:space="preserve">
-    <value>View plugin &amp; server source code</value>
+    <value>檢視外掛程式與伺服器原始碼</value>
   </data>
   <data name="Agreement_PickOneOption" xml:space="preserve">
-    <value>Please chose one of the options above.</value>
+    <value>請從上方選項中選擇一項。</value>
     <comment>Shown if neither of the two radio buttons in the setup setup window are selected.</comment>
   </data>
   <data name="ImportCompleteStatistics" xml:space="preserve">
-    <value>Imported {0} new trap locations and {1} new hoard coffer locations.</value>
+    <value>已匯入 {0} 個新陷阱位置與 {1} 個新藏寶箱位置。</value>
     <comment>After the import of a *.pal file, the number of traps/hoard coffers is shown as a summary.</comment>
   </data>
   <data name="Error_ImportFailed" xml:space="preserve">
-    <value>Import failed: {0}</value>
+    <value>匯入失敗：{0}</value>
   </data>
   <data name="Error_ImportFailed_IncompatibleVersion" xml:space="preserve">
-    <value>Import failed: Incompatible version.</value>
+    <value>匯入失敗：版本不相容。</value>
   </data>
   <data name="Error_ImportFailed_InvalidFile" xml:space="preserve">
-    <value>Import failed: Invalid file.</value>
+    <value>匯入失敗：檔案無效。</value>
   </data>
   <data name="pnAccursed Hoard" xml:space="preserve">
-    <value>Accursed Hoard</value>
+    <value>受詛咒的藏寶箱</value>
   </data>
   <data name="pnAccursed Hoard Outline Colour" xml:space="preserve">
-    <value>Accursed Hoard Outline Colour</value>
+    <value>受詛咒藏寶箱外框顏色</value>
   </data>
   <data name="pnBronze Coffer color" xml:space="preserve">
-    <value>Bronze Coffer color</value>
+    <value>青銅寶箱顏色</value>
   </data>
   <data name="pnMimic Coffer color" xml:space="preserve">
-    <value>Bronze Mimic Trap Coffer color</value>
+    <value>青銅怪面盒陷阱寶箱顏色</value>
   </data>
   <data name="pnMimic Help" xml:space="preserve">
-    <value>Only mimics in bronze chests on early floor sets can be detected.</value>
+    <value>只能偵測到早期樓層青銅寶箱中的怪面盒。</value>
   </data>
   <data name="pnCoffers" xml:space="preserve">
-    <value>Coffers</value>
+    <value>寶箱</value>
   </data>
   <data name="pnCommon settings" xml:space="preserve">
-    <value>Common settings</value>
+    <value>共用設定</value>
   </data>
   <data name="pnDisplay Bronze Treasure Coffer Locations" xml:space="preserve">
-    <value>Display Bronze Treasure Coffer Locations</value>
+    <value>顯示青銅寶箱位置</value>
   </data>
   <data name="pnDisplay Passages" xml:space="preserve">
-    <value>Display Passages</value>
+    <value>顯示通道</value>
   </data>
   <data name="pnDisplay Potential Accursed Hoard Coffer Locations" xml:space="preserve">
-    <value>Display Potential Accursed Hoard Coffer Locations</value>
+    <value>顯示潛在的受詛咒藏寶箱位置</value>
   </data>
   <data name="pnDisplay Potential Accursed Hoard Coffer Locations Help" xml:space="preserve">
-    <value>Displays the location of anywhere an Accursed Hoard coffer has been found.</value>
+    <value>顯示曾發現受詛咒藏寶箱的所有位置。</value>
   </data>
   <data name="pnDisplay Potential Trap Locations" xml:space="preserve">
-    <value>Display Potential Trap Locations</value>
+    <value>顯示潛在的陷阱位置</value>
   </data>
   <data name="pnDisplay Potential Trap Locations Help" xml:space="preserve">
-    <value>Displays the potential location of invisible floor traps</value>
+    <value>顯示隱形地板陷阱的潛在位置</value>
   </data>
   <data name="pnDraw Traps Filled" xml:space="preserve">
-    <value>Draw Traps Filled</value>
+    <value>繪製填滿的陷阱圖示</value>
   </data>
   <data name="pnHide Accursed Hoard Locations on Intuition Use" xml:space="preserve">
-    <value>Hide Accursed Hoard Locations on Intuition Use</value>
+    <value>使用直覺香丸時隱藏受詛咒藏寶箱位置</value>
   </data>
   <data name="pnHide Accursed Hoard Locations on Intuition Use Help" xml:space="preserve">
-    <value>Disable rendering of potential Accursed Hoard coffer locations when using a Pommander of Intuition until the Accursed Hoard is found.</value>
+    <value>使用直覺香丸後，在找到受詛咒藏寶箱之前，停用潛在受詛咒藏寶箱位置的顯示。</value>
   </data>
   <data name="pnHide Traps on Safety/Sight Use" xml:space="preserve">
-    <value>Hide Traps on Safety/Sight Use</value>
+    <value>使用安全/鑑知香丸時隱藏陷阱</value>
   </data>
   <data name="pnHide Traps on Safety/Sight Use Help" xml:space="preserve">
-    <value>Disable rendering of potential traps that are not actually present on this floor after revealing/banishing them via Sight or Safety pomanders.</value>
+    <value>使用鑑知或安全香丸揭露/消除陷阱後，停用顯示此樓層中實際不存在的潛在陷阱。</value>
   </data>
   <data name="pnHighlight When Activated" xml:space="preserve">
-    <value>Highlight When Activated</value>
+    <value>啟用時醒目提示</value>
   </data>
   <data name="pnHighlight When Activated Help" xml:space="preserve">
-    <value>By default the Passage will be marked only with an outline and text label, enabling this will also enable a bright green fill.</value>
+    <value>預設情況下通道只會以外框和文字標籤標示，啟用此選項後會額外顯示亮綠色填色。</value>
   </data>
   <data name="pnPassages" xml:space="preserve">
-    <value>Passages</value>
+    <value>通道</value>
   </data>
   <data name="pnText overlay font scale" xml:space="preserve">
-    <value>Text overlay font scale</value>
+    <value>文字覆蓋字型縮放</value>
   </data>
   <data name="pnTrap Outline Colour" xml:space="preserve">
-    <value>Trap Outline Colour</value>
+    <value>陷阱外框顏色</value>
   </data>
   <data name="pnTraps" xml:space="preserve">
-    <value>Traps</value>
+    <value>陷阱</value>
   </data>
   <data name="pnText overlay" xml:space="preserve">
-    <value>Text overlay</value>
+    <value>文字覆蓋</value>
   </data>
   <data name="pnExit Outline Colour" xml:space="preserve">
-    <value>Exit Outline Colour</value>
+    <value>出口外框顏色</value>
   </data>
-    <data name="Pilgrim's Traverse" xml:space="preserve">
-    <value>Pilgrim's Traverse</value>
+  <data name="Pilgrim's Traverse" xml:space="preserve">
+    <value>巡禮者的橫渡</value>
   </data>
   <data name="Debug_InDeepDungeon" xml:space="preserve">
-    <value>You are in a deep dungeon, territory type {0}.</value>
+    <value>你目前在秘境探索中，區域類型 {0}。</value>
   </data>
   <data name="Debug_SyncState" xml:space="preserve">
-    <value>Sync State = {0}</value>
+    <value>同步狀態 = {0}</value>
   </data>
   <data name="Debug_SyncState_Unknown" xml:space="preserve">
-    <value>Unknown</value>
+    <value>未知</value>
   </data>
   <data name="Debug_KnownTraps" xml:space="preserve">
-    <value>{0} known trap(s)</value>
+    <value>已知陷阱 {0} 個</value>
   </data>
   <data name="Debug_KnownHoardCoffers" xml:space="preserve">
-    <value>{0} known hoard coffer(s)</value>
+    <value>已知藏寶箱 {0} 個</value>
   </data>
   <data name="Debug_SilverCoffersVisible" xml:space="preserve">
-    <value>{0} silver coffer(s) visible on current floor</value>
+    <value>目前樓層可見銀寶箱 {0} 個</value>
   </data>
   <data name="Debug_GoldCoffersVisible" xml:space="preserve">
-    <value>{0} gold coffer(s) visible on current floor</value>
+    <value>目前樓層可見金寶箱 {0} 個</value>
   </data>
   <data name="Debug_PomanderOfSight" xml:space="preserve">
-    <value>Pomander of Sight: {0}</value>
+    <value>鑑知香丸：{0}</value>
   </data>
   <data name="Debug_PomanderOfIntuition" xml:space="preserve">
-    <value>Pomander of Intuition: {0}</value>
+    <value>直覺香丸：{0}</value>
   </data>
   <data name="Debug_CouldNotQueryCount" xml:space="preserve">
-    <value>Could not query current trap/coffer count.</value>
+    <value>無法查詢目前的陷阱/寶箱數量。</value>
   </data>
   <data name="Debug_TrapsCoffersNotDiscoveredNote" xml:space="preserve">
-    <value>Traps and coffers may not be discovered even after using a pomander if they're far away (around 1,5-2 rooms).</value>
+    <value>若陷阱或寶箱距離太遠（約 1.5-2 個房間），即使使用香丸後也可能不會被發現。</value>
   </data>
 </root>

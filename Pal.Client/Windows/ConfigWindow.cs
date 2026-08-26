@@ -8,7 +8,7 @@ using ECommons;
 using ECommons.Configuration;
 using ECommons.ImGuiMethods;
 using Google.Protobuf;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Pal.Client.Configuration;
@@ -171,7 +171,7 @@ namespace Pal.Client.Windows
 
                     if (ThreadLoadImageHandler.TryGetTextureWrap(imagePath, out var logo))
                     {
-                        ImGuiEx.LineCentered("###Logo", () => { ImGui.Image(logo.Handle, new(125f.Scale(), 125f.Scale())); });
+                        ImGuiEx.LineCentered("###Logo", () => { ImGui.Image(logo.ImGuiHandle, new(125f.Scale(), 125f.Scale())); });
                     }
                     else
                     {
@@ -473,8 +473,9 @@ namespace Pal.Client.Windows
             if (_territoryState.IsInDeepDungeon())
             {
                 MemoryTerritory? memoryTerritory = _floorService.GetTerritoryIfReady(_territoryState.LastTerritory);
-                ImGui.Text($"You are in a deep dungeon, territory type {_territoryState.LastTerritory}.");
-                ImGui.Text($"Sync State = {memoryTerritory?.SyncState.ToString() ?? "Unknown"}");
+                ImGui.Text(string.Format(Localization.Debug_InDeepDungeon, _territoryState.LastTerritory));
+                ImGui.Text(string.Format(Localization.Debug_SyncState,
+                    memoryTerritory?.SyncState.ToString() ?? Localization.Debug_SyncState_Unknown));
                 ImGui.Text($"{_debugState.DebugMessage}");
 
                 ImGui.Indent();
@@ -483,14 +484,14 @@ namespace Pal.Client.Windows
                     if (_trapConfig.Show)
                     {
                         int traps = memoryTerritory.Locations.Count(x => x.Type == MemoryLocation.EType.Trap);
-                        ImGui.Text($"{traps} known trap{(traps == 1 ? "" : "s")}");
+                        ImGui.Text(string.Format(Localization.Debug_KnownTraps, traps));
                     }
 
                     if (_hoardConfig.Show)
                     {
                         int hoardCoffers =
                             memoryTerritory.Locations.Count(x => x.Type == MemoryLocation.EType.Hoard);
-                        ImGui.Text($"{hoardCoffers} known hoard coffer{(hoardCoffers == 1 ? "" : "s")}");
+                        ImGui.Text(string.Format(Localization.Debug_KnownHoardCoffers, hoardCoffers));
                     }
 
                     if (_silverConfig.Show)
@@ -498,8 +499,7 @@ namespace Pal.Client.Windows
                         int silverCoffers =
                             _floorService.EphemeralLocations.Count(x =>
                                 x.Type == MemoryLocation.EType.SilverCoffer);
-                        ImGui.Text(
-                            $"{silverCoffers} silver coffer{(silverCoffers == 1 ? "" : "s")} visible on current floor");
+                        ImGui.Text(string.Format(Localization.Debug_SilverCoffersVisible, silverCoffers));
                     }
 
                     if (_goldConfig.Show)
@@ -507,19 +507,17 @@ namespace Pal.Client.Windows
                         int goldCoffers =
                             _floorService.EphemeralLocations.Count(x =>
                                 x.Type == MemoryLocation.EType.GoldCoffer);
-                        ImGui.Text(
-                            $"{goldCoffers} silver coffer{(goldCoffers == 1 ? "" : "s")} visible on current floor");
+                        ImGui.Text(string.Format(Localization.Debug_GoldCoffersVisible, goldCoffers));
                     }
 
-                    ImGui.Text($"Pomander of Sight: {_territoryState.PomanderOfSight}");
-                    ImGui.Text($"Pomander of Intuition: {_territoryState.PomanderOfIntuition}");
+                    ImGui.Text(string.Format(Localization.Debug_PomanderOfSight, _territoryState.PomanderOfSight));
+                    ImGui.Text(string.Format(Localization.Debug_PomanderOfIntuition, _territoryState.PomanderOfIntuition));
                 }
                 else
-                    ImGui.Text("Could not query current trap/coffer count.");
+                    ImGui.Text(Localization.Debug_CouldNotQueryCount);
 
                 ImGui.Unindent();
-                ImGui.TextWrapped(
-                    "Traps and coffers may not be discovered even after using a pomander if they're far away (around 1,5-2 rooms).");
+                ImGui.TextWrapped(Localization.Debug_TrapsCoffersNotDiscoveredNote);
             }
             else
                 ImGui.Text(Localization.Config_Debug_NotInADeepDungeon);

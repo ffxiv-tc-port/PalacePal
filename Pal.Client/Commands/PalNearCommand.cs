@@ -46,7 +46,7 @@ namespace Pal.Client.Commands
             if (state == null)
                 return;
 
-            var playerPosition = _objectTable.LocalPlayer?.Position;
+            var playerPosition = _clientState.LocalPlayer?.Position;
             if (playerPosition == null)
                 return;
             _chat.Message($"Your position: {playerPosition}");

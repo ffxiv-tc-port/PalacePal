@@ -806,7 +806,106 @@ namespace Pal.Client.Properties {
                 return ResourceManager.GetString("Pilgrim\'s Traverse", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to You are in a deep dungeon, territory type {0}..
+        /// </summary>
+        internal static string Debug_InDeepDungeon {
+            get {
+                return ResourceManager.GetString("Debug_InDeepDungeon", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Sync State = {0}.
+        /// </summary>
+        internal static string Debug_SyncState {
+            get {
+                return ResourceManager.GetString("Debug_SyncState", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown.
+        /// </summary>
+        internal static string Debug_SyncState_Unknown {
+            get {
+                return ResourceManager.GetString("Debug_SyncState_Unknown", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} known trap(s).
+        /// </summary>
+        internal static string Debug_KnownTraps {
+            get {
+                return ResourceManager.GetString("Debug_KnownTraps", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} known hoard coffer(s).
+        /// </summary>
+        internal static string Debug_KnownHoardCoffers {
+            get {
+                return ResourceManager.GetString("Debug_KnownHoardCoffers", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} silver coffer(s) visible on current floor.
+        /// </summary>
+        internal static string Debug_SilverCoffersVisible {
+            get {
+                return ResourceManager.GetString("Debug_SilverCoffersVisible", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} gold coffer(s) visible on current floor.
+        /// </summary>
+        internal static string Debug_GoldCoffersVisible {
+            get {
+                return ResourceManager.GetString("Debug_GoldCoffersVisible", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Pomander of Sight: {0}.
+        /// </summary>
+        internal static string Debug_PomanderOfSight {
+            get {
+                return ResourceManager.GetString("Debug_PomanderOfSight", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Pomander of Intuition: {0}.
+        /// </summary>
+        internal static string Debug_PomanderOfIntuition {
+            get {
+                return ResourceManager.GetString("Debug_PomanderOfIntuition", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Could not query current trap/coffer count..
+        /// </summary>
+        internal static string Debug_CouldNotQueryCount {
+            get {
+                return ResourceManager.GetString("Debug_CouldNotQueryCount", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Traps and coffers may not be discovered even after using a pomander if they&apos;re far away (around 1,5-2 rooms)..
+        /// </summary>
+        internal static string Debug_TrapsCoffersNotDiscoveredNote {
+            get {
+                return ResourceManager.GetString("Debug_TrapsCoffersNotDiscoveredNote", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Accursed Hoard.
         /// </summary>

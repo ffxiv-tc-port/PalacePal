@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using Dalamud.Game;
-using Dalamud.Game.Chat;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Plugin.Services;
@@ -38,15 +37,19 @@ namespace Pal.Client.DependencyInjection
         public void Dispose()
             => _chatGui.ChatMessage -= OnChatMessage;
 
-        private void OnChatMessage(IHandleableChatMessage message)
+        // NOTE: TC's Dalamud IChatGui.ChatMessage predates XivChatRelationKind/SourceKind
+        // (added later to distinguish "message about the local player" from other sources),
+        // so that extra filter is dropped here - only the SystemMessage type check remains.
+        private void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message,
+            ref bool isHandled)
         {
             if (_configuration.FirstUse)
                 return;
 
-            if (message is not { LogKind: XivChatType.SystemMessage, SourceKind: XivChatRelationKind.LocalPlayer })
+            if (type != XivChatType.SystemMessage)
                 return;
 
-            var text = message.Message.TextValue;
+            var text = message.TextValue;
             //PluginLog.Debug($"Message: {message}, floorchanged: {_localizedChatMessages.FloorChanged.ToString()}");
             if (_localizedChatMessages.FloorChanged.IsMatch(text))
             {
