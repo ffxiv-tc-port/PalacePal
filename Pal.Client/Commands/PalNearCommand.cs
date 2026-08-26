@@ -46,7 +46,9 @@ namespace Pal.Client.Commands
             if (state == null)
                 return;
 
-            var playerPosition = _clientState.LocalPlayer?.Position;
+            // API13 把 IClientState.LocalPlayer 標為過時；ClientState.LocalPlayer 本身就是
+            // => this.objectTable.LocalPlayer 的純轉發，改用本類別既有的 IObjectTable 行為不變。
+            var playerPosition = _objectTable.LocalPlayer?.Position;
             if (playerPosition == null)
                 return;
             _chat.Message($"Your position: {playerPosition}");

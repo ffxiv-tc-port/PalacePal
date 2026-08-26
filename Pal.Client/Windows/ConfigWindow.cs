@@ -2,6 +2,7 @@
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.ImGuiFileDialog;
+using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using ECommons;
@@ -260,6 +261,18 @@ namespace Pal.Client.Windows
                 Spacing(true); ImGui.Checkbox(Localization.pnDraw_Traps_Filled, ref _trapConfig.Fill);
                 Spacing(); ImGui.Checkbox(Localization.pnHide_Traps_on_Safety_Sight_Use, ref _trapConfig.OnlyVisibleAfterPomander);
                 ImGuiComponents.HelpMarker(Localization.pnHide_Traps_on_Safety_Sight_Use_Help);
+
+                // 上面那個是總開關,底下兩個是各自的魔陶器細項(預設都開,等同原本的行為)
+                using (ImRaii.Disabled(!_trapConfig.OnlyVisibleAfterPomander))
+                {
+                    ImGui.Indent();
+                    Spacing(); ImGui.Checkbox(Localization.pnHide_Traps_on_Safety_Use, ref P.Config.HideTrapsOnSafety);
+                    ImGuiComponents.HelpMarker(Localization.pnHide_Traps_on_Safety_Use_Help);
+                    Spacing(); ImGui.Checkbox(Localization.pnHide_Traps_on_Sight_Use, ref P.Config.HideTrapsOnSight);
+                    ImGuiComponents.HelpMarker(Localization.pnHide_Traps_on_Sight_Use_Help);
+                    ImGui.Unindent();
+                }
+
                 ImGuiGroup.EndGroupBox();
             }
 
@@ -271,6 +284,15 @@ namespace Pal.Client.Windows
                 Spacing(true); ImGui.ColorEdit4(Localization.pnAccursed_Hoard_Outline_Colour, ref _hoardConfig.Color, ImGuiColorEditFlags.NoInputs);
                 Spacing(); ImGui.Checkbox(Localization.pnHide_Accursed_Hoard_Locations_on_Intuition_Use, ref _hoardConfig.OnlyVisibleAfterPomander);
                 ImGuiComponents.HelpMarker(Localization.pnHide_Accursed_Hoard_Locations_on_Intuition_Use_Help);
+
+                using (ImRaii.Disabled(!_hoardConfig.OnlyVisibleAfterPomander))
+                {
+                    ImGui.Indent();
+                    Spacing(); ImGui.Checkbox(Localization.pnHide_Hoard_on_Intuition_Use, ref P.Config.HideHoardOnIntuition);
+                    ImGuiComponents.HelpMarker(Localization.pnHide_Hoard_on_Intuition_Use_Help);
+                    ImGui.Unindent();
+                }
+
                 ImGuiGroup.EndGroupBox();
             }
 
@@ -512,6 +534,10 @@ namespace Pal.Client.Windows
 
                     ImGui.Text(string.Format(Localization.Debug_PomanderOfSight, _territoryState.PomanderOfSight));
                     ImGui.Text(string.Format(Localization.Debug_PomanderOfIntuition, _territoryState.PomanderOfIntuition));
+                    ImGui.Text(string.Format(Localization.Debug_PomanderFromMemory,
+                        _territoryState.SafetyActiveFromMemory,
+                        _territoryState.SightActiveFromMemory,
+                        _territoryState.IntuitionActiveFromMemory));
                 }
                 else
                     ImGui.Text(Localization.Debug_CouldNotQueryCount);

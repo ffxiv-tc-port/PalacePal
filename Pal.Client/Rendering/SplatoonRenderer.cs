@@ -115,7 +115,9 @@ namespace Pal.Client.Rendering
         {
             try
             {
-                Vector3? pos = Svc.ClientState.LocalPlayer?.Position;
+                // API13 把 IClientState.LocalPlayer 標為過時；ClientState.LocalPlayer 本身就是
+                // => this.objectTable.LocalPlayer 的純轉發，改用本類別既有的 IObjectTable 行為不變。
+                Vector3? pos = _objectTable.LocalPlayer?.Position;
                 if (pos != null)
                 {
                     ResetLayer(ELayer.Test);

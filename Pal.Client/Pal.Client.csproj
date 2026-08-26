@@ -59,11 +59,20 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
 		<PackageReference Include="System.Security.Cryptography.ProtectedData" Version="7.0.1" />
-		<PackageReference Include="ECommons" Version="3.0.1.3" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Pal.Common\Pal.Common.csproj" />
+	  <!-- ECommons 走本 org 的 fork 子模組(BaseVersion 仍是 3.0.1.15,只換來源不換版本號)。
+	       公開 NuGet 的 3.0.1.10 沒有我們補的判空/加固,而 PunishLib 自己就宣告了那顆
+	       PackageReference,所以這裡不換來源的話出貨的會是未加固版。
+	       🔴 這裡是 ProjectReference 而不是 PackageReference:PunishLib 遞移宣告的
+	       ECommons NuGet 3.0.1.10 會被這個 ProjectReference 蓋掉。
+	       ✅ 2026-08-19 實證(不再是推測):出貨的 Pal.Client/dist/ECommons.dll 帶加固版
+	       獨有的 IsComponentEnabled / IsCaptureEnabled 標記,packages.lock.json 的
+	       ECommons 條目也從 NuGet 套件變成 "type": "Project"。
+	       驗法 tools/fleet/ecommons_hardening_check.py。 -->
+	  <ProjectReference Include="..\ECommons\ECommons\ECommons.csproj" />
 	  <ProjectReference Include="..\PunishLib\PunishLib\PunishLib.csproj" />
 	</ItemGroup>
 

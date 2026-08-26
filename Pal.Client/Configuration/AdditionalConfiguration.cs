@@ -26,5 +26,13 @@ namespace Pal.Client.Configuration
         public Vector4 TrapColor = 0xFF0000FF.ToVector4();
         public Vector4 ExitColor = 0xFFFF00C8.ToVector4();
         public float OverlayFScale = 1.3f;
+
+        // 魔陶器感知:三個效果各自獨立的開關,預設全開(維持既有行為)。
+        // 這些是既有總開關(Traps/HoardCoffers 的 OnlyVisibleAfterPomander)底下的細項,
+        // 總開關關掉時這三個不生效。新欄位在既有使用者的 JSON 裡不存在,
+        // 反序列化會保留此處的初始值,所以既有使用者也吃得到「預設開」。
+        public bool HideTrapsOnSafety = true;
+        public bool HideTrapsOnSight = true;
+        public bool HideHoardOnIntuition = true;
     }
 }

@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PunishLib", "PunishLib\PunishLib\PunishLib.csproj", "{BFCD1212-9D64-4878-952E-425CAA02CF4B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECommons", "ECommons\ECommons\ECommons.csproj", "{B45C81D5-2FF8-4F4A-A920-352A5B1A183F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,14 @@ Global
 		{BFCD1212-9D64-4878-952E-425CAA02CF4B}.Release|Any CPU.Build.0 = Release|x64
 		{BFCD1212-9D64-4878-952E-425CAA02CF4B}.Release|x64.ActiveCfg = Release|x64
 		{BFCD1212-9D64-4878-952E-425CAA02CF4B}.Release|x64.Build.0 = Release|x64
+		{B45C81D5-2FF8-4F4A-A920-352A5B1A183F}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{B45C81D5-2FF8-4F4A-A920-352A5B1A183F}.Debug|Any CPU.Build.0 = Debug|x64
+		{B45C81D5-2FF8-4F4A-A920-352A5B1A183F}.Debug|x64.ActiveCfg = Debug|x64
+		{B45C81D5-2FF8-4F4A-A920-352A5B1A183F}.Debug|x64.Build.0 = Debug|x64
+		{B45C81D5-2FF8-4F4A-A920-352A5B1A183F}.Release|Any CPU.ActiveCfg = Release|x64
+		{B45C81D5-2FF8-4F4A-A920-352A5B1A183F}.Release|Any CPU.Build.0 = Release|x64
+		{B45C81D5-2FF8-4F4A-A920-352A5B1A183F}.Release|x64.ActiveCfg = Release|x64
+		{B45C81D5-2FF8-4F4A-A920-352A5B1A183F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -112,6 +112,7 @@ namespace Pal.Client
             _serviceCollection.AddScoped<IPalacePalConfiguration>(sp =>
                 sp.GetRequiredService<ConfigurationManager>().Load());
             _serviceCollection.AddTransient<RepoVerification>();
+            _serviceCollection.AddScoped<IpcProvider>();
 
             // commands
             _serviceCollection.AddScoped<PalConfigCommand>();
@@ -122,6 +123,7 @@ namespace Pal.Client
 
             // territory & marker related services
             _serviceCollection.AddScoped<TerritoryState>();
+            _serviceCollection.AddScoped<PomanderSensor>();
             _serviceCollection.AddScoped<FrameworkService>();
             _serviceCollection.AddScoped<ChatService>();
             _serviceCollection.AddScoped<FloorService>();
