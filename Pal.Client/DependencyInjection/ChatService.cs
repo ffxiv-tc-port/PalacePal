@@ -37,7 +37,7 @@ namespace Pal.Client.DependencyInjection
         public void Dispose()
             => _chatGui.ChatMessage -= OnChatMessage;
 
-        // NOTE: TC's Dalamud IChatGui.ChatMessage predates XivChatRelationKind/SourceKind
+        // NOTE: real API13's IChatGui.ChatMessage predates XivChatRelationKind/SourceKind
         // (added later to distinguish "message about the local player" from other sources),
         // so that extra filter is dropped here - only the SystemMessage type check remains.
         private void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message,
