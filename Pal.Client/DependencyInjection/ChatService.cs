@@ -102,7 +102,7 @@ namespace Pal.Client.DependencyInjection
         }
 
         /// <summary>
-        /// 只在狀態真的改變時寫一行 Information。使用者跑 LogLevel 2,Debug/Verbose 收不到;
+        /// 只在狀態真的改變時寫一行 Information。使用者跑 LogLevel 1,盲區只有 Verbose,Debug 收得到但單檔數十萬行會淹沒;
         /// 而「同狀態重複印」會把真正的翻轉淹掉,所以兩邊都要顧。
         /// </summary>
         private void SetSight(PomanderState state)

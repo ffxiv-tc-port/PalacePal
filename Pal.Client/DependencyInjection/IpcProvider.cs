@@ -68,7 +68,7 @@ namespace Pal.Client.DependencyInjection
             _trapLocationsProvider.RegisterFunc(GetTrapLocations);
             _hoardLocationsProvider.RegisterFunc(GetHoardLocations);
 
-            // 使用者跑 LogLevel 2，要能回報就得是 Information。
+            // 使用者跑 LogLevel 1，要能回報就得是 Information。
             _logger.LogInformation(
                 "已註冊唯讀 IPC 端點 (v{Version}): {ApiVersionLabel}, {TrapLabel}, {HoardLabel}",
                 ApiVersion, LabelApiVersion, LabelGetTrapLocations, LabelGetHoardLocations);
