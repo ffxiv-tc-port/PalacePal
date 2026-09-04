@@ -1,21 +1,14 @@
-<div align="center">
-
-<img src="Assets/palacepal_icon.png" alt="Palace Pal IconUrl" width="15%">
-
 # Palace Pal
 
-Shows possible trap & Accursed Hoard locations in Palace of The Dead, Heaven on High, and Eureka Orthos.
+在**死者宮殿**、**天之御柱**、**正統優雷卡**中標示可能的陷阱與埋藏的寶藏位置。指令 `/pal` 開啟設定視窗。
 
-<br />
+需要另外安裝 **Splatoon** 才能繪製疊加層，請從同一個插件庫安裝。
 
-</div>
+## 主要功能
 
-Note, you **need to install Splatoon**, which is used to render the visible overlays. Please install Splatoon from the same repo this plugin is from.
+- **陷阱／寶藏標示**：在小地圖與世界疊加層上標出已知或推測的陷阱、寶藏位置。
+- **兩種模式**：
+  - **線上模式**：從社群伺服器抓取由其他玩家回報的位置。
+  - **離線模式**：只顯示自己用透知萬應藥親自找到的位置，不連線伺服器。
 
-<br />
-
-<div align="center">
-
-[![image](https://discordapp.com/api/guilds/1001823907193552978/embed.png?style=banner2)](https://discord.gg/Zzrcc8kmvy)
-
-</div>
+原作者：Liza Carvelli，[PunishXIV/PalacePal](https://github.com/PunishXIV/PalacePal)
