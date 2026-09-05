@@ -155,7 +155,7 @@ namespace Pal.Client.Rendering
                             _chat.Error(
                                 $"Splatoon is installed under the plugin name '{pluginName}', which is incompatible with the Splatoon API.");
                             _chat.Message(
-                                "You need to install Splatoon from the official repository at https://puni.sh/plugin/Splatoon.");
+                                "You need to install Splatoon from the Traditional Chinese plugin repository at https://raw.githubusercontent.com/ffxiv-tc-port/DalamudPluginsTC/main/repo.json");
                             return;
                         }
                     }
