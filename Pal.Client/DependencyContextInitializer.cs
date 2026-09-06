@@ -186,7 +186,8 @@ namespace Pal.Client
             await using var dbContext = scope.ServiceProvider.GetRequiredService<PalClientContext>();
             var cleanup = scope.ServiceProvider.GetRequiredService<Cleanup>();
 
-            cleanup.Purge(dbContext);
+            cleanup.Purge(dbContext, out var purgeLog);
+            cleanup.EmitPending(purgeLog);
 
             await dbContext.SaveChangesAsync();
         }

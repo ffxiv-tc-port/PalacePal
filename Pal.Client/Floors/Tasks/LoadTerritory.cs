@@ -25,31 +25,59 @@ namespace Pal.Client.Floors.Tasks
 
         protected override void Run(PalClientContext dbContext, ILogger<LoadTerritory> logger)
         {
-            lock (_territory.LockObj)
+            // 鎖內不寫 log：ILogger 走 Serilog sink，它自己有鎖、還會做檔案 I/O，
+            // 在 LockObj 裡寫等於讓其他要動同一層樓的執行緒排在 log 檔後面。
+            // 每一則各自用一個變數記在「原本會寫它的那一點」，出鎖之後照原順序寫出去
+            // ——等級、文字、觸發條件都不變，中途擲例外時該寫的仍然會寫、不該寫的仍然不寫。
+            MemoryTerritory.EReadyState? stateLog = null;
+            bool loadingLog = false;
+            Cleanup.PendingLog? purgeLog = null;
+            int? loadedCount = null;
+
+            try
             {
-                if (_territory.ReadyState != MemoryTerritory.EReadyState.Loading)
+                lock (_territory.LockObj)
                 {
-                    logger.LogInformation("Territory {Territory} is in state {State}", _territory.TerritoryType,
-                        _territory.ReadyState);
-                    return;
+                    if (_territory.ReadyState != MemoryTerritory.EReadyState.Loading)
+                    {
+                        stateLog = _territory.ReadyState;
+                    }
+                    else
+                    {
+                        loadingLog = true;
+
+                        // purge outdated locations
+                        _cleanup.Purge(dbContext, _territory.TerritoryType, out var purged);
+                        purgeLog = purged;
+
+                        // load good locations
+                        List<ClientLocation> locations = dbContext.Locations
+                            .Where(o => o.TerritoryType == (ushort)_territory.TerritoryType)
+                            .Include(o => o.ImportedBy)
+                            .Include(o => o.RemoteEncounters)
+                            .AsSplitQuery()
+                            .ToList();
+                        _territory.Initialize(locations.Select(ToMemoryLocation));
+
+                        loadedCount = locations.Count;
+                    }
                 }
+            }
+            finally
+            {
+                // TerritoryType 是建構時就定案的唯讀屬性，鎖外讀它是安全的。
+                if (stateLog is { } state)
+                    logger.LogInformation("Territory {Territory} is in state {State}", _territory.TerritoryType,
+                        state);
 
-                logger.LogInformation("Loading territory {Territory}", _territory.TerritoryType);
+                if (loadingLog)
+                    logger.LogInformation("Loading territory {Territory}", _territory.TerritoryType);
 
-                // purge outdated locations
-                _cleanup.Purge(dbContext, _territory.TerritoryType);
+                _cleanup.EmitPending(purgeLog);
 
-                // load good locations
-                List<ClientLocation> locations = dbContext.Locations
-                    .Where(o => o.TerritoryType == (ushort)_territory.TerritoryType)
-                    .Include(o => o.ImportedBy)
-                    .Include(o => o.RemoteEncounters)
-                    .AsSplitQuery()
-                    .ToList();
-                _territory.Initialize(locations.Select(ToMemoryLocation));
-
-                logger.LogInformation("Loaded {Count} locations for territory {Territory}", locations.Count,
-                    _territory.TerritoryType);
+                if (loadedCount is { } count)
+                    logger.LogInformation("Loaded {Count} locations for territory {Territory}", count,
+                        _territory.TerritoryType);
             }
         }
 

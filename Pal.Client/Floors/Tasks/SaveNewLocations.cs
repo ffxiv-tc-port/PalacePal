@@ -32,20 +32,32 @@ namespace Pal.Client.Floors.Tasks
             ILogger<T> logger,
             List<PersistentLocation> locations)
         {
-            lock (territory.LockObj)
+            // 鎖內不寫 log（ILogger 走 Serilog sink：自己有鎖、還會做檔案 I/O）。
+            // 在原本會寫它的那一點把要印的值記下來，出鎖之後才寫；等級、文字、觸發條件不變。
+            int? pendingCount = null;
+
+            try
             {
-                logger.LogInformation("Saving {Count} new locations for territory {Territory}", locations.Count,
-                    territory.TerritoryType);
-
-                Dictionary<PersistentLocation, ClientLocation> mapping =
-                    locations.ToDictionary(x => x, x => ToDatabaseLocation(x, territory.TerritoryType));
-                dbContext.Locations.AddRange(mapping.Values);
-                dbContext.SaveChanges();
-
-                foreach ((PersistentLocation persistentLocation, ClientLocation clientLocation) in mapping)
+                lock (territory.LockObj)
                 {
-                    persistentLocation.LocalId = clientLocation.LocalId;
+                    pendingCount = locations.Count;
+
+                    Dictionary<PersistentLocation, ClientLocation> mapping =
+                        locations.ToDictionary(x => x, x => ToDatabaseLocation(x, territory.TerritoryType));
+                    dbContext.Locations.AddRange(mapping.Values);
+                    dbContext.SaveChanges();
+
+                    foreach ((PersistentLocation persistentLocation, ClientLocation clientLocation) in mapping)
+                    {
+                        persistentLocation.LocalId = clientLocation.LocalId;
+                    }
                 }
+            }
+            finally
+            {
+                if (pendingCount is { } count)
+                    logger.LogInformation("Saving {Count} new locations for territory {Territory}", count,
+                        territory.TerritoryType);
             }
         }
 
