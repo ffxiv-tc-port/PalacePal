@@ -128,7 +128,7 @@ namespace Pal.Client
                 _rootScopeCompletionSource.SetException(e);
                 _logger.LogError(e, "Async load failed");
                 ShowErrorOnLogin(() =>
-                    new Chat(_chatGui).Error(string.Format(Localization.Error_LoadFailed,
+                    new Chat(_chatGui, _framework).Error(string.Format(Localization.Error_LoadFailed,
                         $"{e.GetType()} - {e.Message}")));
 
                 _loadState = ELoadState.Error;
