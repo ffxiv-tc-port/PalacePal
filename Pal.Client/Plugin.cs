@@ -47,6 +47,13 @@ namespace Pal.Client
         internal IServiceScope? _rootScope;
         private Action? _loginAction;
 
+        /// <summary>
+        /// 載入失敗那條路上自己 <c>new</c> 出來的 <see cref="Chat"/> —— 那時候 DI 容器要不是沒建好、
+        /// 就是根本拿不到 singleton。留住參考是為了卸載時釋放它：<see cref="Chat"/> 是 IDisposable，
+        /// 而它的 <c>Dispose</c> 負責把共用的聊天佇列排乾，這條路上沒有別的擁有者會做這件事。
+        /// </summary>
+        private Chat? _loadFailedChat;
+
         internal static Plugin P = null!;
         internal AdditionalConfiguration Config;
 
@@ -127,8 +134,12 @@ namespace Pal.Client
             {
                 _rootScopeCompletionSource.SetException(e);
                 _logger.LogError(e, "Async load failed");
+                // 這個實例要留住：它是這條路上唯一的 Chat，卸載時要靠它的 Dispose
+                // 把共用佇列排乾（DI 的 singleton 在載入失敗時根本沒被建出來）。
+                var loadFailedChat = new Chat(_chatGui, _framework);
+                _loadFailedChat = loadFailedChat;
                 ShowErrorOnLogin(() =>
-                    new Chat(_chatGui, _framework).Error(string.Format(Localization.Error_LoadFailed,
+                    loadFailedChat.Error(string.Format(Localization.Error_LoadFailed,
                         $"{e.GetType()} - {e.Message}")));
 
                 _loadState = ELoadState.Error;
@@ -245,8 +256,14 @@ namespace Pal.Client
 
             _initCts.Cancel();
             _rootScope?.Dispose();
+
+            // DI 容器收掉 singleton 的 Chat 時，它自己的 Dispose 會把共用佇列排乾一次。
             _dependencyInjectionContext?.Dispose();
             PunishLibMain.Dispose();
+
+            // 放最後：上面每一步都還可能印東西，而載入失敗那條路上根本沒有 singleton 可以排乾。
+            // 佇列是共用的，排乾兩次安全（第二次會發現它空了）。
+            _loadFailedChat?.Dispose();
         }
 
         private enum ELoadState
