@@ -179,6 +179,18 @@ namespace Pal.Client.Floors
                         IReadOnlyList<EphemeralLocation> visibleEphemeralMarkers) =
                     GetRelevantGameObjects();
 
+                // 把「這一幀真的看得到什麼」拍成快照給 IPC 讀。
+                // 🔑 位置刻意就放在這裡:用的是外掛自己拿去畫圖的同一份清單,不另外算一份
+                //    會分岔的;而且無條件每幀更新(清單是空的也照拍),時間戳才有意義。
+                // ⚠️ 這行在 HandlePersistentLocations 之前,是因為後者會把 visiblePersistentMarkers
+                //    裡的物件塞進 territory.Locations 並原地改 Seen —— 快照只抄 Vector3,
+                //    先拍後拍內容都一樣,但先拍語意比較乾淨(拍的是「觀測結果」不是「合併結果」)。
+                _floorService.UpdateVisibleLocations(
+                    _territoryState.LastTerritory,
+                    _pomanderSensor.CurrentFloor,
+                    visiblePersistentMarkers,
+                    visibleEphemeralMarkers);
+
                 HandlePersistentLocations(territoryType, visiblePersistentMarkers, recreateLayout);
 
                 if (_floorService.MergeEphemeralLocations(visibleEphemeralMarkers, recreateLayout))

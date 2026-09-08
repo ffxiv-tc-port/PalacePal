@@ -21,6 +21,20 @@ namespace Pal.Client.Floors
 
         private ConcurrentBag<EphemeralLocation> _ephemeralLocations = new();
 
+        /// <summary>
+        /// 上一幀真的看得到的實體。framework 執行緒寫、IPC 執行緒讀。
+        /// <para>
+        /// 🔴 <c>volatile</c> 是必要的，不是裝飾：寫入端是「先把陣列填好，再把整個快照物件
+        /// 指派上來」，volatile 寫提供 release 語意，保證讀到新參考的執行緒一定也看得到
+        /// 陣列裡已經填好的內容。讀取端一律「先抄進區域變數再用」，不要重複讀這個欄位。
+        /// </para>
+        /// <para>
+        /// <c>null</c> ＝ <b>不知道</b>（還沒進深宮、樓層還沒載入完、或剛換區清掉了），
+        /// 與「知道，而且看得到 0 個」是兩件事 —— IPC 端點把這兩者分開回報。
+        /// </para>
+        /// </summary>
+        private volatile VisibleLocationSnapshot? _visibleLocations;
+
         public FloorService(IPalacePalConfiguration configuration, Cleanup cleanup,
             IServiceScopeFactory serviceScopeFactory)
         {
@@ -33,9 +47,37 @@ namespace Pal.Client.Floors
         public IReadOnlyCollection<EphemeralLocation> EphemeralLocations => _ephemeralLocations;
         public bool IsImportRunning { get; private set; }
 
+        /// <summary>
+        /// 上一幀真的看得到的實體，<c>null</c> ＝ 不知道。語意的完整定義見
+        /// <see cref="VisibleLocationSnapshot"/>。
+        /// </summary>
+        public VisibleLocationSnapshot? VisibleLocations => _visibleLocations;
+
+        /// <summary>
+        /// 把這一幀算出來的可見清單拍成快照公開出去。🔴 只准在 framework 執行緒上呼叫。
+        /// </summary>
+        /// <remarks>
+        /// 每幀無條件覆蓋一次（就算四種都是空的也要），<b>快照的時間戳本身就是資料</b> ——
+        /// 消費端靠它分辨「現在看得到 0 個」與「這份資料已經舊了、不知道現在如何」。
+        /// 只在「有東西」時才更新會讓那兩件事變得分不出來。
+        /// </remarks>
+        public void UpdateVisibleLocations(
+            uint territoryType,
+            byte floor,
+            IReadOnlyList<PersistentLocation> visiblePersistentLocations,
+            IReadOnlyList<EphemeralLocation> visibleEphemeralLocations)
+        {
+            _visibleLocations = VisibleLocationSnapshot.Capture(
+                territoryType, floor, visiblePersistentLocations, visibleEphemeralLocations);
+        }
+
         public void ChangeTerritory(uint territoryType)
         {
             _ephemeralLocations = new ConcurrentBag<EphemeralLocation>();
+
+            // 換區（含離開深宮）一律把可見快照清成「不知道」。留著舊的會讓消費端在載入畫面
+            // 期間照舊畫出上一層的實體，而且時間戳還是新的 —— 那比什麼都不畫更糟。
+            _visibleLocations = null;
 
             if (typeof(ETerritoryType).IsEnumDefined(territoryType))
                 ChangeTerritory((ETerritoryType)territoryType);
