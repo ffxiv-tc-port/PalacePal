@@ -806,7 +806,115 @@ namespace Pal.Client.Properties {
                 return ResourceManager.GetString("Pilgrim\'s Traverse", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to You are in a deep dungeon, territory type {0}..
+        /// </summary>
+        internal static string Debug_InDeepDungeon {
+            get {
+                return ResourceManager.GetString("Debug_InDeepDungeon", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Sync State = {0}.
+        /// </summary>
+        internal static string Debug_SyncState {
+            get {
+                return ResourceManager.GetString("Debug_SyncState", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown.
+        /// </summary>
+        internal static string Debug_SyncState_Unknown {
+            get {
+                return ResourceManager.GetString("Debug_SyncState_Unknown", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} known trap(s).
+        /// </summary>
+        internal static string Debug_KnownTraps {
+            get {
+                return ResourceManager.GetString("Debug_KnownTraps", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} known hoard coffer(s).
+        /// </summary>
+        internal static string Debug_KnownHoardCoffers {
+            get {
+                return ResourceManager.GetString("Debug_KnownHoardCoffers", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} silver coffer(s) visible on current floor.
+        /// </summary>
+        internal static string Debug_SilverCoffersVisible {
+            get {
+                return ResourceManager.GetString("Debug_SilverCoffersVisible", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} gold coffer(s) visible on current floor.
+        /// </summary>
+        internal static string Debug_GoldCoffersVisible {
+            get {
+                return ResourceManager.GetString("Debug_GoldCoffersVisible", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Pomander of Sight: {0}.
+        /// </summary>
+        internal static string Debug_PomanderOfSight {
+            get {
+                return ResourceManager.GetString("Debug_PomanderOfSight", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Pomander of Intuition: {0}.
+        /// </summary>
+        internal static string Debug_PomanderOfIntuition {
+            get {
+                return ResourceManager.GetString("Debug_PomanderOfIntuition", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Floor effect flags (game memory): Safety={0}, Sight={1}, Intuition={2}.
+        /// </summary>
+        internal static string Debug_PomanderFromMemory {
+            get {
+                return ResourceManager.GetString("Debug_PomanderFromMemory", resourceCulture);
+            }
+        }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Could not query current trap/coffer count..
+        /// </summary>
+        internal static string Debug_CouldNotQueryCount {
+            get {
+                return ResourceManager.GetString("Debug_CouldNotQueryCount", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Traps and coffers may not be discovered even after using a pomander if they&apos;re far away (around 1,5-2 rooms)..
+        /// </summary>
+        internal static string Debug_TrapsCoffersNotDiscoveredNote {
+            get {
+                return ResourceManager.GetString("Debug_TrapsCoffersNotDiscoveredNote", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Accursed Hoard.
         /// </summary>
@@ -961,6 +1069,132 @@ namespace Pal.Client.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Hide Potential Accursed Hoard Markers after Pomander of Intuition.
+        /// </summary>
+        internal static string pnHide_Hoard_on_Intuition_Use {
+            get {
+                return ResourceManager.GetString("pnHide Hoard on Intuition Use", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A Pomander of Intuition points at the actual hoard, so the recorded potential locations are noise. The pomander stays in effect across floors until the hoard is found, and so does this..
+        /// </summary>
+        internal static string pnHide_Hoard_on_Intuition_Use_Help {
+            get {
+                return ResourceManager.GetString("pnHide Hoard on Intuition Use Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide trap markers that already went off on this floor.
+        /// </summary>
+        internal static string pnHide_Stepped_Traps {
+            get {
+                return ResourceManager.GetString("pnHide Stepped Traps", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A trap in a deep dungeon only goes off once per floor.
+        /// </summary>
+        internal static string pnHide_Stepped_Traps_Help {
+            get {
+                return ResourceManager.GetString("pnHide Stepped Traps Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide Trap Markers after Pomander of Safety.
+        /// </summary>
+        internal static string pnHide_Traps_on_Safety_Use {
+            get {
+                return ResourceManager.GetString("pnHide Traps on Safety Use", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to After a Pomander of Safety removes every trap on this floor, the recorded trap locations are pure noise. Hide them until the next floor..
+        /// </summary>
+        internal static string pnHide_Traps_on_Safety_Use_Help {
+            get {
+                return ResourceManager.GetString("pnHide Traps on Safety Use Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide Potential Trap Markers after Pomander of Sight.
+        /// </summary>
+        internal static string pnUnconfirmed_Marker_Opacity {
+            get {
+                return ResourceManager.GetString("pnUnconfirmed Marker Opacity", resourceCulture);
+            }
+        }
+        
+        internal static string pnUnconfirmed_Marker_Opacity_Help {
+            get {
+                return ResourceManager.GetString("pnUnconfirmed Marker Opacity Help", resourceCulture);
+            }
+        }
+
+        internal static string pnCommunity_Min_Confirmations {
+            get {
+                return ResourceManager.GetString("pnCommunity Min Confirmations", resourceCulture);
+            }
+        }
+
+        internal static string pnCommunity_Min_Confirmations_Help {
+            get {
+                return ResourceManager.GetString("pnCommunity Min Confirmations Help", resourceCulture);
+            }
+        }
+        
+        internal static string pnTrap_Kind_Labels {
+            get {
+                return ResourceManager.GetString("pnTrap Kind Labels", resourceCulture);
+            }
+        }
+        
+        internal static string pnTrap_Kind_Labels_Help {
+            get {
+                return ResourceManager.GetString("pnTrap Kind Labels Help", resourceCulture);
+            }
+        }
+        
+        internal static string pnDisplay_Return_Devices {
+            get {
+                return ResourceManager.GetString("pnDisplay Return Devices", resourceCulture);
+            }
+        }
+        
+        internal static string pnDisplay_Return_Devices_Help {
+            get {
+                return ResourceManager.GetString("pnDisplay Return Devices Help", resourceCulture);
+            }
+        }
+        
+        internal static string pnReturn_Outline_Colour {
+            get {
+                return ResourceManager.GetString("pnReturn Outline Colour", resourceCulture);
+            }
+        }
+        
+        internal static string pnHide_Traps_on_Sight_Use {
+            get {
+                return ResourceManager.GetString("pnHide Traps on Sight Use", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to After a Pomander of Sight reveals this floor, every real trap is visible in the world, so only the potential locations are hidden - traps that actually exist keep their marker. Restored on the next floor..
+        /// </summary>
+        internal static string pnHide_Traps_on_Sight_Use_Help {
+            get {
+                return ResourceManager.GetString("pnHide Traps on Sight Use Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Highlight When Activated.
         /// </summary>
         internal static string pnHighlight_When_Activated {
@@ -1101,6 +1335,177 @@ namespace Pal.Client.Properties {
         internal static string Statistics_Traps {
             get {
                 return ResourceManager.GetString("Statistics_Traps", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No response within {0} seconds.
+        /// </summary>
+        internal static string ConnectionError_Timeout {
+            get {
+                return ResourceManager.GetString("ConnectionError_Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not reach the community server; only traps and coffers you recorded yourself will be shown. Details: /pal → Community tab..
+        /// </summary>
+        internal static string ConnectionError_UnreachableChat {
+            get {
+                return ResourceManager.GetString("ConnectionError_UnreachableChat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server: not contacted yet (connects when you enter a deep dungeon).
+        /// </summary>
+        internal static string Config_ServerStatus_NotAttempted {
+            get {
+                return ResourceManager.GetString("Config_ServerStatus_NotAttempted", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Download source: {0} (Palantir community server)..
+        /// </summary>
+        internal static string Config_PalantirServer {
+            get {
+                return ResourceManager.GetString("Config_PalantirServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connection successful: download source {0} ({1}) is responding.
+        /// </summary>
+        internal static string ConnectionTest_Success {
+            get {
+                return ResourceManager.GetString("ConnectionTest_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not reach download source {0}: {1}.
+        /// </summary>
+        internal static string ConnectionTest_Failure {
+            get {
+                return ResourceManager.GetString("ConnectionTest_Failure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Checks whether the download source {0} responds..
+        /// </summary>
+        internal static string Config_TestConnection_Tooltip {
+            get {
+                return ResourceManager.GetString("Config_TestConnection_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The original author&apos;s server ({0}) has been retired..
+        /// </summary>
+        internal static string Config_LegacyServerRetired {
+            get {
+                return ResourceManager.GetString("Config_LegacyServerRetired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server: connected (last at {0}).
+        /// </summary>
+        internal static string Config_ServerStatus_Connected {
+            get {
+                return ResourceManager.GetString("Config_ServerStatus_Connected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server: unreachable (last attempt {0}) — only traps and coffers you recorded yourself are shown.
+        /// </summary>
+        internal static string Config_ServerStatus_Unreachable {
+            get {
+                return ResourceManager.GetString("Config_ServerStatus_Unreachable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reason: {0}.
+        /// </summary>
+        internal static string Config_ServerStatus_UnreachableTooltip {
+            get {
+                return ResourceManager.GetString("Config_ServerStatus_UnreachableTooltip", resourceCulture);
+            }
+        }
+        
+        internal static string pnMinimap {
+            get {
+                return ResourceManager.GetString("pnMinimap", resourceCulture);
+            }
+        }
+        
+        internal static string pnShow_Minimap {
+            get {
+                return ResourceManager.GetString("pnShow Minimap", resourceCulture);
+            }
+        }
+        
+        internal static string pnShow_Minimap_Help {
+            get {
+                return ResourceManager.GetString("pnShow Minimap Help", resourceCulture);
+            }
+        }
+        
+        internal static string pnMinimap_Party {
+            get {
+                return ResourceManager.GetString("pnMinimap Party", resourceCulture);
+            }
+        }
+        
+        internal static string pnMinimap_Active_Only {
+            get {
+                return ResourceManager.GetString("pnMinimap Active Only", resourceCulture);
+            }
+        }
+        
+        internal static string pnMinimap_Active_Only_Help {
+            get {
+                return ResourceManager.GetString("pnMinimap Active Only Help", resourceCulture);
+            }
+        }
+        
+        internal static string pnMinimap_Scale {
+            get {
+                return ResourceManager.GetString("pnMinimap Scale", resourceCulture);
+            }
+        }
+        
+        internal static string pnMinimap_Opacity {
+            get {
+                return ResourceManager.GetString("pnMinimap Opacity", resourceCulture);
+            }
+        }
+        
+        internal static string pnMinimap_Lock {
+            get {
+                return ResourceManager.GetString("pnMinimap Lock", resourceCulture);
+            }
+        }
+        
+        internal static string pnMinimap_Click_Through {
+            get {
+                return ResourceManager.GetString("pnMinimap Click Through", resourceCulture);
+            }
+        }
+        
+        internal static string pnMinimap_Click_Through_Help {
+            get {
+                return ResourceManager.GetString("pnMinimap Click Through Help", resourceCulture);
+            }
+        }
+        
+        internal static string pnMinimap_Unavailable {
+            get {
+                return ResourceManager.GetString("pnMinimap Unavailable", resourceCulture);
             }
         }
     }

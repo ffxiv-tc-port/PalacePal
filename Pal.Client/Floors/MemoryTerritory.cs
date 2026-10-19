@@ -21,7 +21,7 @@ namespace Pal.Client.Floors
         public EReadyState ReadyState { get; set; } = EReadyState.NotLoaded;
         public ESyncState SyncState { get; set; } = ESyncState.NotAttempted;
 
-        public ConcurrentBag<PersistentLocation> Locations { get; } = new();
+        public LocationBag<PersistentLocation> Locations { get; } = new();
         public object LockObj { get; } = new();
 
         public void Initialize(IEnumerable<PersistentLocation> locations)

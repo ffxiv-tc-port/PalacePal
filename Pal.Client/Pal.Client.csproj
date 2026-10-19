@@ -1,6 +1,7 @@
-﻿<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+﻿<Project Sdk="Dalamud.NET.Sdk/13.0.0">
 
 	<PropertyGroup>
+		<TargetFramework>net9.0-windows7.0</TargetFramework>
 		<EnableWindowsTargeting>true</EnableWindowsTargeting>
 		<LangVersion>latest</LangVersion>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
@@ -12,8 +13,21 @@
 		<DebugType>portable</DebugType>
 		<PathMap Condition="$(SolutionDir) != ''">$(SolutionDir)=X:\</PathMap>
 		<GitVersion>false</GitVersion>
-		<Version>4.15.0.0</Version>
 	</PropertyGroup>
+
+	<PropertyGroup>
+		<BuildNumberFile>$(MSBuildProjectDirectory)\BuildNumber.txt</BuildNumberFile>
+		<_PreviousBuildNumber Condition="Exists('$(BuildNumberFile)')">$([System.IO.File]::ReadAllText('$(BuildNumberFile)').Trim())</_PreviousBuildNumber>
+		<_PreviousBuildNumber Condition="'$(_PreviousBuildNumber)' == ''">0</_PreviousBuildNumber>
+		<BuildNumber>$([MSBuild]::Add($(_PreviousBuildNumber), 1))</BuildNumber>
+		<VersionPrefix>7.15.0</VersionPrefix>
+		<Version>$(VersionPrefix).$(BuildNumber)</Version>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<FileVersion>$(Version)</FileVersion>
+	</PropertyGroup>
+	<Target Name="PersistBuildNumber" AfterTargets="Build">
+		<WriteLinesToFile File="$(BuildNumberFile)" Lines="$(BuildNumber)" Overwrite="true" />
+	</Target>
 
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<OutputPath>dist</OutputPath>
@@ -45,11 +59,20 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
 		<PackageReference Include="System.Security.Cryptography.ProtectedData" Version="7.0.1" />
-		<PackageReference Include="ECommons" Version="3.2.0.9" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Pal.Common\Pal.Common.csproj" />
+	  <!-- ECommons 走本 org 的 fork 子模組(BaseVersion 仍是 3.0.1.15,只換來源不換版本號)。
+	       公開 NuGet 的 3.0.1.10 沒有我們補的判空/加固,而 PunishLib 自己就宣告了那顆
+	       PackageReference,所以這裡不換來源的話出貨的會是未加固版。
+	       🔴 這裡是 ProjectReference 而不是 PackageReference:PunishLib 遞移宣告的
+	       ECommons NuGet 3.0.1.10 會被這個 ProjectReference 蓋掉。
+	       ✅ 2026-08-19 實證(不再是推測):出貨的 Pal.Client/dist/ECommons.dll 帶加固版
+	       獨有的 IsComponentEnabled / IsCaptureEnabled 標記,packages.lock.json 的
+	       ECommons 條目也從 NuGet 套件變成 "type": "Project"。
+	       驗法 tools/fleet/ecommons_hardening_check.py。 -->
+	  <ProjectReference Include="..\ECommons\ECommons\ECommons.csproj" />
 	  <ProjectReference Include="..\PunishLib\PunishLib\PunishLib.csproj" />
 	</ItemGroup>
 
@@ -78,7 +101,29 @@
 		</Compile>
 	</ItemGroup>
 
+	<ItemGroup>
+		<!-- 關於分頁讀的本地圖示。不可叫 images/icon.png：DalamudPackager 會把那個檔名從 latest.zip 剔除 -->
+		<Content Include="..\Assets\palacepal_icon.png" Link="images\about-icon.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Palantir 的 BSD-3-Clause 要求二進位散布也附上授權文字：跟著輸出目錄進出貨包。 -->
+		<Content Include="Net\Palantir\LICENSE-Palantir.txt" Link="LICENSE-Palantir.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
 	<Target Name="Clean">
 		<RemoveDir Directories="dist" />
+	</Target>
+
+	<!-- ECommons 的文件註解檔 ECommons.xml 執行期用不到：不複製進輸出目錄，出貨包也就不帶它（ECommons.pdb 照留，崩潰堆疊行號要用）。 -->
+	<Target Name="ExcludeECommonsXmlDoc" AfterTargets="ResolveAssemblyReferences">
+		<ItemGroup>
+			<_ECommonsXmlDoc Include="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)%(Extension)' == 'ECommons.xml'" />
+			<ReferenceCopyLocalPaths Remove="@(_ECommonsXmlDoc)" />
+		</ItemGroup>
 	</Target>
 </Project>

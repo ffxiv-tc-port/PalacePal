@@ -1,4 +1,5 @@
-﻿using Palace;
+﻿using Grpc.Core;
+using Palace;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,49 +19,17 @@ namespace Pal.Client.Net
                 return (false, new());
 
             var palaceClient = new PalaceService.PalaceServiceClient(_channel);
-            var downloadReply = await palaceClient.DownloadFloorsAsync(new DownloadFloorsRequest { TerritoryType = territoryId }, headers: AuthorizedHeaders(), cancellationToken: cancellationToken);
+            DownloadFloorsReply downloadReply;
+            try
+            {
+                downloadReply = await palaceClient.DownloadFloorsAsync(new DownloadFloorsRequest { TerritoryType = territoryId }, headers: AuthorizedHeaders(), deadline: DateTime.UtcNow.AddSeconds(30), cancellationToken: cancellationToken);
+            }
+            catch (RpcException e) when (!cancellationToken.IsCancellationRequested)
+            {
+                ReportServerFailure(e.Message, automatic: true);
+                throw;
+            }
             return (downloadReply.Success, downloadReply.Objects.Select(CreateLocationFromNetworkObject).ToList());
-        }
-
-        public async Task<(bool, List<PersistentLocation>)> UploadLocations(uint territoryType, IReadOnlyList<PersistentLocation> locations, CancellationToken cancellationToken = default)
-        {
-            if (locations.Count == 0)
-                return (true, new());
-
-            if (!await Connect(cancellationToken))
-                return (false, new());
-
-            var palaceClient = new PalaceService.PalaceServiceClient(_channel);
-            var uploadRequest = new UploadFloorsRequest
-            {
-                TerritoryType = territoryType,
-            };
-            uploadRequest.Objects.AddRange(locations.Select(m => new PalaceObject
-            {
-                Type = m.Type.ToObjectType(),
-                X = m.Position.X,
-                Y = m.Position.Y,
-                Z = m.Position.Z
-            }));
-            var uploadReply = await palaceClient.UploadFloorsAsync(uploadRequest, headers: AuthorizedHeaders(), cancellationToken: cancellationToken);
-            return (uploadReply.Success, uploadReply.Objects.Select(CreateLocationFromNetworkObject).ToList());
-        }
-
-        public async Task<bool> MarkAsSeen(uint territoryType, IReadOnlyList<PersistentLocation> locations, CancellationToken cancellationToken = default)
-        {
-            if (locations.Count == 0)
-                return true;
-
-            if (!await Connect(cancellationToken))
-                return false;
-
-            var palaceClient = new PalaceService.PalaceServiceClient(_channel);
-            var seenRequest = new MarkObjectsSeenRequest { TerritoryType = territoryType };
-            foreach (var marker in locations)
-                seenRequest.NetworkIds.Add(marker.NetworkId.ToString());
-
-            var seenReply = await palaceClient.MarkObjectsSeenAsync(seenRequest, headers: AuthorizedHeaders(), deadline: DateTime.UtcNow.AddSeconds(10), cancellationToken: cancellationToken);
-            return seenReply.Success;
         }
 
         private PersistentLocation CreateLocationFromNetworkObject(PalaceObject obj)

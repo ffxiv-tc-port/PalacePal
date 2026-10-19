@@ -47,6 +47,13 @@ namespace Pal.Client
         internal IServiceScope? _rootScope;
         private Action? _loginAction;
 
+        /// <summary>
+        /// 載入失敗那條路上自己 <c>new</c> 出來的 <see cref="Chat"/> —— 那時候 DI 容器要不是沒建好、
+        /// 就是根本拿不到 singleton。留住參考是為了卸載時釋放它：<see cref="Chat"/> 是 IDisposable，
+        /// 而它的 <c>Dispose</c> 負責把共用的聊天佇列排乾，這條路上沒有別的擁有者會做這件事。
+        /// </summary>
+        private Chat? _loadFailedChat;
+
         internal static Plugin P = null!;
         internal AdditionalConfiguration Config;
 
@@ -59,7 +66,7 @@ namespace Pal.Client
         {
             P = this;
             ECommonsMain.Init(pluginInterface, this, Module.SplatoonAPI, Module.DalamudReflector);
-            PunishLibMain.Init(pluginInterface, Name);
+            PunishLibMain.Init(pluginInterface, Name, new AboutPlugin() { IconPath = LocalIconPath(pluginInterface) });
             new TickScheduler(delegate
             {
                 Config = EzConfig.Init<AdditionalConfiguration>(); // TODO temp solution, move it to main config later (maybe)
@@ -70,7 +77,7 @@ namespace Pal.Client
                 _framework = framework;
 
                 // set up the current UI language before creating anything
-                Localization.Culture = new CultureInfo(_pluginInterface.UiLanguage);
+                Localization.Culture = new CultureInfo(MapDalamudLanguage(_pluginInterface.UiLanguage));
 
                 _commandManager.AddHandler("/pal", new CommandInfo(OnCommand)
                 {
@@ -83,6 +90,18 @@ namespace Pal.Client
 
                 Task.Run(async () => await CreateDependencyContext());
             });
+        }
+
+        /// <summary>
+        /// 出貨包裡與外掛庫圖示相同的 images/about-icon.png；不存在時回 null（關於分頁沿用 manifest 的 IconUrl）。
+        /// 不用 images/icon.png 這個檔名：DalamudPackager 打包時會把它從 latest.zip 剔除。
+        /// </summary>
+        private static string? LocalIconPath(IDalamudPluginInterface pluginInterface)
+        {
+            var dir = pluginInterface.AssemblyLocation.DirectoryName;
+            if (dir is null) return null;
+            var path = System.IO.Path.Combine(dir, "images/about-icon.png");
+            return System.IO.File.Exists(path) ? path : null;
         }
 
         public string Name => Localization.Palace_Pal;
@@ -127,8 +146,12 @@ namespace Pal.Client
             {
                 _rootScopeCompletionSource.SetException(e);
                 _logger.LogError(e, "Async load failed");
+                // 這個實例要留住：它是這條路上唯一的 Chat，卸載時要靠它的 Dispose
+                // 把共用佇列排乾（DI 的 singleton 在載入失敗時根本沒被建出來）。
+                var loadFailedChat = new Chat(_chatGui, _framework);
+                _loadFailedChat = loadFailedChat;
                 ShowErrorOnLogin(() =>
-                    new Chat(_chatGui).Error(string.Format(Localization.Error_LoadFailed,
+                    loadFailedChat.Error(string.Format(Localization.Error_LoadFailed,
                         $"{e.GetType()} - {e.Message}")));
 
                 _loadState = ELoadState.Error;
@@ -211,10 +234,19 @@ namespace Pal.Client
         {
             _logger.LogInformation("Language set to '{Language}'", languageCode);
 
-            Localization.Culture = new CultureInfo(languageCode);
+            Localization.Culture = new CultureInfo(MapDalamudLanguage(languageCode));
             _windowSystem!.Windows.OfType<ILanguageChanged>()
                 .Each(w => w.LanguageChanged());
         }
+
+        // TC Dalamud reports UiLanguage "tw", which CultureInfo resolves to
+        // the Twi (Ghana) language, silently falling back to English; map
+        // Chinese-flavoured codes onto the shipped neutral zh satellite.
+        private static string MapDalamudLanguage(string languageCode) => languageCode switch
+        {
+            "tw" or "zh" or "zh-TW" or "zh-CN" or "zh-Hant" or "zh-Hans" => "zh",
+            _ => languageCode,
+        };
 
         private void Draw()
         {
@@ -236,8 +268,14 @@ namespace Pal.Client
 
             _initCts.Cancel();
             _rootScope?.Dispose();
+
+            // DI 容器收掉 singleton 的 Chat 時，它自己的 Dispose 會把共用佇列排乾一次。
             _dependencyInjectionContext?.Dispose();
             PunishLibMain.Dispose();
+
+            // 放最後：上面每一步都還可能印東西，而載入失敗那條路上根本沒有 singleton 可以排乾。
+            // 佇列是共用的，排乾兩次安全（第二次會發現它空了）。
+            _loadFailedChat?.Dispose();
         }
 
         private enum ELoadState

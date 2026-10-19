@@ -19,7 +19,24 @@ namespace Pal.Client.Floors
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IReadOnlyDictionary<ETerritoryType, MemoryTerritory> _territories;
 
-        private ConcurrentBag<EphemeralLocation> _ephemeralLocations = new();
+        private LocationBag<EphemeralLocation> _ephemeralLocations = new();
+
+        // 只在 framework 執行緒讀寫。
+        private (Guid AccountId, string PartialId)? _partialAccountId;
+
+        /// <summary>
+        /// 上一幀真的看得到的實體。framework 執行緒寫、IPC 執行緒讀。
+        /// <para>
+        /// 🔴 <c>volatile</c> 是必要的，不是裝飾：寫入端是「先把陣列填好，再把整個快照物件
+        /// 指派上來」，volatile 寫提供 release 語意，保證讀到新參考的執行緒一定也看得到
+        /// 陣列裡已經填好的內容。讀取端一律「先抄進區域變數再用」，不要重複讀這個欄位。
+        /// </para>
+        /// <para>
+        /// <c>null</c> ＝ <b>不知道</b>（還沒進深宮、樓層還沒載入完、或剛換區清掉了），
+        /// 與「知道，而且看得到 0 個」是兩件事 —— IPC 端點把這兩者分開回報。
+        /// </para>
+        /// </summary>
+        private volatile VisibleLocationSnapshot? _visibleLocations;
 
         public FloorService(IPalacePalConfiguration configuration, Cleanup cleanup,
             IServiceScopeFactory serviceScopeFactory)
@@ -33,9 +50,37 @@ namespace Pal.Client.Floors
         public IReadOnlyCollection<EphemeralLocation> EphemeralLocations => _ephemeralLocations;
         public bool IsImportRunning { get; private set; }
 
+        /// <summary>
+        /// 上一幀真的看得到的實體，<c>null</c> ＝ 不知道。語意的完整定義見
+        /// <see cref="VisibleLocationSnapshot"/>。
+        /// </summary>
+        public VisibleLocationSnapshot? VisibleLocations => _visibleLocations;
+
+        /// <summary>
+        /// 把這一幀算出來的可見清單拍成快照公開出去。🔴 只准在 framework 執行緒上呼叫。
+        /// </summary>
+        /// <remarks>
+        /// 每幀無條件覆蓋一次（就算四種都是空的也要），<b>快照的時間戳本身就是資料</b> ——
+        /// 消費端靠它分辨「現在看得到 0 個」與「這份資料已經舊了、不知道現在如何」。
+        /// 只在「有東西」時才更新會讓那兩件事變得分不出來。
+        /// </remarks>
+        public void UpdateVisibleLocations(
+            uint territoryType,
+            byte floor,
+            IReadOnlyList<VisibleLocation> visiblePersistentLocations,
+            IReadOnlyList<VisibleLocation> visibleEphemeralLocations)
+        {
+            _visibleLocations = VisibleLocationSnapshot.Capture(
+                territoryType, floor, visiblePersistentLocations, visibleEphemeralLocations, _visibleLocations);
+        }
+
         public void ChangeTerritory(uint territoryType)
         {
-            _ephemeralLocations = new ConcurrentBag<EphemeralLocation>();
+            _ephemeralLocations = new LocationBag<EphemeralLocation>();
+
+            // 換區（含離開深宮）一律把可見快照清成「不知道」。留著舊的會讓消費端在載入畫面
+            // 期間照舊畫出上一層的實體，而且時間戳還是新的 —— 那比什麼都不畫更糟。
+            _visibleLocations = null;
 
             if (typeof(ETerritoryType).IsEnumDefined(territoryType))
                 ChangeTerritory((ETerritoryType)territoryType);
@@ -53,8 +98,10 @@ namespace Pal.Client.Floors
 
         public MemoryTerritory? GetTerritoryIfReady(uint territoryType)
         {
-            if (typeof(ETerritoryType).IsEnumDefined(territoryType))
-                return GetTerritoryIfReady((ETerritoryType)territoryType);
+            // _territories 的鍵就是列舉的全部成員，查不到＝不是深層迷宮。
+            if (_territories.TryGetValue((ETerritoryType)territoryType, out MemoryTerritory? territory) &&
+                territory.ReadyState == MemoryTerritory.EReadyState.Ready)
+                return territory;
 
             return null;
         }
@@ -72,72 +119,170 @@ namespace Pal.Client.Floors
 
         public bool MergePersistentLocations(
             ETerritoryType territoryType,
-            IReadOnlyList<PersistentLocation> visibleLocations,
+            IReadOnlyList<VisibleLocation> visibleLocations,
             bool recreateLayout,
-            out List<PersistentLocation> locationsToSync)
+            out List<PersistentLocation>? locationsToSync)
         {
             MemoryTerritory? territory = GetTerritoryIfReady(territoryType);
-            locationsToSync = new();
+            locationsToSync = null;
             if (territory == null)
                 return false;
 
-            var partialAccountId = _configuration.FindAccount(RemoteApi.RemoteUrl)?.AccountId.ToPartialId();
-            var persistentLocations = territory.Locations.ToList();
+            // 這一幀開始時的內容；迴圈裡新加進去的點位不在裡面（同一幀不會拿來互相比對）。
+            ReadOnlySpan<PersistentLocation> persistentLocations = territory.Locations.Snapshot();
 
-            List<PersistentLocation> markAsSeen = new();
-            List<PersistentLocation> newLocations = new();
-            foreach (var visibleLocation in visibleLocations)
+            // 帳號只有在「對上的已知點位有網路 id、還沒要求過同步」時才用得到，那時才去讀（一幀最多一次）。
+            string? partialAccountId = null;
+            bool partialAccountIdResolved = false;
+
+            List<PersistentLocation>? markAsSeen = null;
+            List<PersistentLocation>? newLocations = null;
+            for (int i = 0; i < visibleLocations.Count; i++)
             {
-                PersistentLocation? existingLocation = persistentLocations.SingleOrDefault(x => x == visibleLocation);
+                VisibleLocation visibleLocation = visibleLocations[i];
+                PersistentLocation? existingLocation = FindSingle(persistentLocations, visibleLocation);
                 if (existingLocation != null)
                 {
                     if (existingLocation is { Seen: false, LocalId: { } })
                     {
                         existingLocation.Seen = true;
-                        markAsSeen.Add(existingLocation);
+                        (markAsSeen ??= new()).Add(existingLocation);
                     }
 
                     // This requires you to have seen a trap/hoard marker once per floor to synchronize this for older local states,
                     // markers discovered afterwards are automatically marked seen.
-                    if (partialAccountId != null &&
-                        existingLocation is { LocalId: { }, NetworkId: { }, RemoteSeenRequested: false } &&
-                        !existingLocation.RemoteSeenOn.Contains(partialAccountId))
+                    if (existingLocation is { LocalId: { }, NetworkId: { }, RemoteSeenRequested: false })
                     {
-                        existingLocation.RemoteSeenRequested = true;
-                        locationsToSync.Add(existingLocation);
+                        if (!partialAccountIdResolved)
+                        {
+                            partialAccountId = ResolvePartialAccountId();
+                            partialAccountIdResolved = true;
+                        }
+
+                        if (partialAccountId != null && !existingLocation.RemoteSeenOn.Contains(partialAccountId))
+                        {
+                            existingLocation.RemoteSeenRequested = true;
+                            (locationsToSync ??= new()).Add(existingLocation);
+                        }
                     }
 
                     continue;
                 }
 
-                territory.Locations.Add(visibleLocation);
-                newLocations.Add(visibleLocation);
+                PersistentLocation newLocation = new()
+                {
+                    Type = visibleLocation.Type,
+                    Position = visibleLocation.Position,
+                    Seen = true,
+                    Source = visibleLocation.Source,
+                };
+                territory.Locations.Add(newLocation);
+                (newLocations ??= new()).Add(newLocation);
                 recreateLayout = true;
             }
 
-            if (markAsSeen.Count > 0)
+            if (markAsSeen != null)
                 new MarkLocalSeen(_serviceScopeFactory, territory, markAsSeen).Start();
 
-            if (newLocations.Count > 0)
+            if (newLocations != null)
                 new SaveNewLocations(_serviceScopeFactory, territory, newLocations).Start();
 
             return recreateLayout;
         }
 
-        /// <returns>Whether the locations have changed</returns>
-        public bool MergeEphemeralLocations(IReadOnlyList<EphemeralLocation> visibleLocations, bool recreate)
+        /// <summary>
+        /// 與 <c>SingleOrDefault(x => 同種類同一格)</c> 同義：沒有回 null，超過一個擲例外。
+        /// </summary>
+        private static PersistentLocation? FindSingle(ReadOnlySpan<PersistentLocation> locations,
+            VisibleLocation target)
         {
-            recreate |= _ephemeralLocations.Any(loc => visibleLocations.All(x => x != loc));
-            recreate |= visibleLocations.Any(loc => _ephemeralLocations.All(x => x != loc));
+            PersistentLocation? found = null;
+            foreach (PersistentLocation location in locations)
+            {
+                if (!target.Matches(location))
+                    continue;
 
-            if (!recreate)
+                if (found != null)
+                    return ThrowMoreThanOneMatch(locations.ToArray(), target);
+
+                found = location;
+            }
+
+            return found;
+        }
+
+        // 交給 LINQ 擲，例外的型別與訊息才會和原本一樣。
+        private static PersistentLocation? ThrowMoreThanOneMatch(PersistentLocation[] locations,
+            VisibleLocation target)
+            => locations.SingleOrDefault(x => target.Matches(x));
+
+        private string? ResolvePartialAccountId()
+        {
+            Guid? accountId = _configuration.FindAccount(RemoteApi.RemoteUrl)?.AccountId;
+            if (accountId == null)
+                return null;
+
+            if (_partialAccountId is not { } cached || cached.AccountId != accountId.Value)
+                _partialAccountId = cached = (accountId.Value, accountId.Value.ToPartialId());
+
+            return cached.PartialId;
+        }
+
+        /// <returns>Whether the locations have changed</returns>
+        public bool MergeEphemeralLocations(IReadOnlyList<VisibleLocation> visibleLocations, bool recreate)
+        {
+            if (!recreate && !Differs(_ephemeralLocations.Snapshot(), visibleLocations))
                 return false;
 
             _ephemeralLocations.Clear();
-            foreach (var visibleLocation in visibleLocations)
-                _ephemeralLocations.Add(visibleLocation);
+            for (int i = 0; i < visibleLocations.Count; i++)
+            {
+                _ephemeralLocations.Add(new EphemeralLocation
+                {
+                    Type = visibleLocations[i].Type,
+                    Position = visibleLocations[i].Position,
+                    Seen = true,
+                });
+            }
 
             return true;
+        }
+
+        /// <summary>
+        /// 兩邊是不是「互相都找得到對應」：有任何一邊的點位在另一邊沒有相符的就算不同。
+        /// 不看順序，也不看重複幾次。
+        /// </summary>
+        private static bool Differs(ReadOnlySpan<EphemeralLocation> current,
+            IReadOnlyList<VisibleLocation> visibleLocations)
+        {
+            foreach (EphemeralLocation loc in current)
+            {
+                bool found = false;
+                for (int i = 0; i < visibleLocations.Count && !found; i++)
+                    found = visibleLocations[i].Matches(loc);
+
+                if (!found)
+                    return true;
+            }
+
+            for (int i = 0; i < visibleLocations.Count; i++)
+            {
+                VisibleLocation visible = visibleLocations[i];
+                bool found = false;
+                foreach (EphemeralLocation loc in current)
+                {
+                    if (visible.Matches(loc))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    return true;
+            }
+
+            return false;
         }
 
         public void ResetAll()

@@ -112,7 +112,8 @@ namespace Pal.Client.DependencyInjection
 
                 dbContext.SaveChanges();
 
-                _cleanup.Purge(dbContext);
+                _cleanup.Purge(dbContext, out var purgeLog);
+                _cleanup.EmitPending(purgeLog);
                 dbContext.SaveChanges();
 
                 return (traps, hoard);
@@ -154,7 +155,8 @@ namespace Pal.Client.DependencyInjection
                 dbContext.RemoveRange(dbContext.Imports.Where(x => x.Id == id));
                 dbContext.SaveChanges();
 
-                _cleanup.Purge(dbContext);
+                _cleanup.Purge(dbContext, out var purgeLog);
+                _cleanup.EmitPending(purgeLog);
                 dbContext.SaveChanges();
             }
             finally

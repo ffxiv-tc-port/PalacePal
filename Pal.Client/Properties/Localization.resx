@@ -372,13 +372,13 @@ This is not synchronized with other players and not saved between floors/runs.</
     <value>Ideally, we want to discover every potential trap and chest location in the game, but doing this alone is very tedious. Floor 51-60 has over 300 trap locations and over 290 coffer locations - and we don't know if that map is complete. Higher floors naturally see fewer runs, making solo attempts to map the place much harder.</value>
   </data>
   <data name="Explanation_4" xml:space="preserve">
-    <value>You can decide whether you want to share traps and chests you find with the community, which likewise also will let you see chests and coffers found by other players. This can be changed at any time. No data regarding your FFXIV character or account is ever sent to our server.</value>
+    <value>You can decide whether to download traps and coffers other players have found from the Palantir community server. This plugin only downloads; the traps and coffers you find are never uploaded. This can be changed at any time.</value>
   </data>
   <data name="Config_UploadMyDiscoveries_ShowOtherTraps" xml:space="preserve">
-    <value>Upload my discoveries, show traps &amp; coffers other players have discovered</value>
+    <value>Show traps &amp; coffers other players have discovered (download only, nothing is uploaded)</value>
   </data>
   <data name="Config_NeverUploadDiscoveries_ShowMyTraps" xml:space="preserve">
-    <value>Never upload discoveries, show only traps and coffers I found myself</value>
+    <value>Don't download, show only traps and coffers I found myself</value>
   </data>
   <data name="Agreement_Warning1" xml:space="preserve">
     <value>While this is not an automation feature, you're still very likely to break the ToS.</value>
@@ -466,6 +466,24 @@ This is not synchronized with other players and not saved between floors/runs.</
   <data name="pnHide Traps on Safety/Sight Use Help" xml:space="preserve">
     <value>Disable rendering of potential traps that are not actually present on this floor after revealing/banishing them via Sight or Safety pomanders.</value>
   </data>
+  <data name="pnHide Traps on Safety Use" xml:space="preserve">
+    <value>Hide Trap Markers after Pomander of Safety</value>
+  </data>
+  <data name="pnHide Traps on Safety Use Help" xml:space="preserve">
+    <value>After a Pomander of Safety removes every trap on this floor, the recorded trap locations are pure noise. Hide them until the next floor.</value>
+  </data>
+  <data name="pnHide Traps on Sight Use" xml:space="preserve">
+    <value>Hide Potential Trap Markers after Pomander of Sight</value>
+  </data>
+  <data name="pnHide Traps on Sight Use Help" xml:space="preserve">
+    <value>After a Pomander of Sight reveals this floor, every real trap is visible in the world, so only the potential locations are hidden - traps that actually exist keep their marker. Restored on the next floor.</value>
+  </data>
+  <data name="pnHide Hoard on Intuition Use" xml:space="preserve">
+    <value>Hide Potential Accursed Hoard Markers after Pomander of Intuition</value>
+  </data>
+  <data name="pnHide Hoard on Intuition Use Help" xml:space="preserve">
+    <value>A Pomander of Intuition points at the actual hoard, so the recorded potential locations are noise. The pomander stays in effect across floors until the hoard is found, and so does this.</value>
+  </data>
   <data name="pnHighlight When Activated" xml:space="preserve">
     <value>Highlight When Activated</value>
   </data>
@@ -492,5 +510,144 @@ This is not synchronized with other players and not saved between floors/runs.</
   </data>
     <data name="Pilgrim's Traverse" xml:space="preserve">
     <value>Pilgrim's Traverse</value>
+  </data>
+  <data name="Debug_InDeepDungeon" xml:space="preserve">
+    <value>You are in a deep dungeon, territory type {0}.</value>
+  </data>
+  <data name="Debug_SyncState" xml:space="preserve">
+    <value>Sync State = {0}</value>
+  </data>
+  <data name="Debug_SyncState_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="Debug_KnownTraps" xml:space="preserve">
+    <value>{0} known trap(s)</value>
+  </data>
+  <data name="Debug_KnownHoardCoffers" xml:space="preserve">
+    <value>{0} known hoard coffer(s)</value>
+  </data>
+  <data name="Debug_SilverCoffersVisible" xml:space="preserve">
+    <value>{0} silver coffer(s) visible on current floor</value>
+  </data>
+  <data name="Debug_GoldCoffersVisible" xml:space="preserve">
+    <value>{0} gold coffer(s) visible on current floor</value>
+  </data>
+  <data name="Debug_PomanderOfSight" xml:space="preserve">
+    <value>Pomander of Sight: {0}</value>
+  </data>
+  <data name="Debug_PomanderOfIntuition" xml:space="preserve">
+    <value>Pomander of Intuition: {0}</value>
+  </data>
+  <data name="Debug_PomanderFromMemory" xml:space="preserve">
+    <value>Floor effect flags (game memory): Safety={0}, Sight={1}, Intuition={2}</value>
+  </data>
+  <data name="Debug_CouldNotQueryCount" xml:space="preserve">
+    <value>Could not query current trap/coffer count.</value>
+  </data>
+  <data name="Debug_TrapsCoffersNotDiscoveredNote" xml:space="preserve">
+    <value>Traps and coffers may not be discovered even after using a pomander if they're far away (around 1,5-2 rooms).</value>
+  </data>
+  <data name="ConnectionError_Timeout" xml:space="preserve">
+    <value>No response within {0} seconds</value>
+  </data>
+  <data name="ConnectionError_UnreachableChat" xml:space="preserve">
+    <value>Could not reach the community server; only traps and coffers you recorded yourself will be shown. Details: /pal → Community tab.</value>
+  </data>
+  <data name="Config_ServerStatus_NotAttempted" xml:space="preserve">
+    <value>Server: not contacted yet (connects when you enter a deep dungeon)</value>
+  </data>
+  <data name="Config_ServerStatus_Connected" xml:space="preserve">
+    <value>Server: connected (last at {0})</value>
+  </data>
+  <data name="Config_ServerStatus_Unreachable" xml:space="preserve">
+    <value>Server: unreachable (last attempt {0}) — only traps and coffers you recorded yourself are shown</value>
+  </data>
+  <data name="Config_ServerStatus_UnreachableTooltip" xml:space="preserve">
+    <value>Reason: {0}
+No automatic retry until {1}; "Test Connection" retries immediately.</value>
+  </data>
+  <data name="pnUnconfirmed Marker Opacity" xml:space="preserve">
+    <value>Unconfirmed marker opacity</value>
+  </data>
+  <data name="pnUnconfirmed Marker Opacity Help" xml:space="preserve">
+    <value>Traps and hoard locations you have not confirmed yourself (downloaded, imported, or older records) are drawn at this opacity and below the confirmed ones. Your own confirmed locations (trap triggered, revealed by Pomander of Sight, hoard revealed by Pomander of Intuition or dug up) are always drawn solid. Press Save to apply.</value>
+  </data>
+  <data name="Config_PalantirServer" xml:space="preserve">
+    <value>Download source: {0} (Palantir community server). Download only — nothing you find is ever uploaded.</value>
+  </data>
+  <data name="ConnectionTest_Success" xml:space="preserve">
+    <value>Connection successful: download source {0} ({1}) is responding.</value>
+  </data>
+  <data name="ConnectionTest_Failure" xml:space="preserve">
+    <value>Could not reach download source {0}: {1}</value>
+  </data>
+  <data name="Config_TestConnection_Tooltip" xml:space="preserve">
+    <value>Checks whether the download source {0} responds. Read-only: it only asks for server info and sends nothing.</value>
+  </data>
+  <data name="Config_LegacyServerRetired" xml:space="preserve">
+    <value>The original author's server ({0}) has been retired; this plugin no longer connects to it. "Test Connection" only checks the download source above.</value>
+  </data>
+  <data name="pnCommunity Min Confirmations" xml:space="preserve">
+    <value>Minimum community reports</value>
+  </data>
+  <data name="pnCommunity Min Confirmations Help" xml:space="preserve">
+    <value>Locations downloaded from Palantir are only shown once at least this many players have reported the same spot. 0 shows everything, including spots reported only once (mistakes included). Locations you have seen or confirmed yourself always show. Downloaded locations whose report count is not known yet (before this session's download finishes, or older data) still show. The same filter applies to locations shared with other plugins (e.g. BossModReborn). Recommended (Palantir's defaults): 4 for traps, 2 for the Accursed Hoard, which builds up reports much more slowly. Press Save to apply.</value>
+  </data>
+  <data name="pnTrap Kind Labels" xml:space="preserve">
+    <value>Label trap types after Pomander of Sight</value>
+  </data>
+  <data name="pnTrap Kind Labels Help" xml:space="preserve">
+    <value>While a Pomander of Sight is in effect, show the trap type (landmine, luring trap, enfeebling trap, ...) in small text above each trap the pomander revealed. Names come from the game data. Nothing is drawn without the pomander. Press Save to apply.</value>
+  </data>
+  <data name="pnHide Stepped Traps" xml:space="preserve">
+    <value>Hide trap markers that already went off on this floor</value>
+  </data>
+  <data name="pnHide Stepped Traps Help" xml:space="preserve">
+    <value>A trap in a deep dungeon only goes off once per floor. With this on, as soon as one goes off (you or a party member walked into it), every trap marker within 2y of it (faint and solid alike) is no longer drawn for the rest of this floor. The markers come back on the next floor or after you leave the deep dungeon. Only the drawing changes: nothing is deleted, and other plugins reading PalacePal still get every marker.</value>
+  </data>
+  <data name="pnDisplay Return Devices" xml:space="preserve">
+    <value>Display Cairns of Return</value>
+  </data>
+  <data name="pnDisplay Return Devices Help" xml:space="preserve">
+    <value>Circles the cairn / beacon / return device of the current floor (Palace of the Dead, Heaven-on-High, Eureka Orthos) whenever the game has it loaded nearby, with its in-game name as text. Uses only what the game currently shows; nothing is downloaded or uploaded.</value>
+  </data>
+  <data name="pnReturn Outline Colour" xml:space="preserve">
+    <value>Return Outline Colour</value>
+  </data>
+  <data name="pnMinimap" xml:space="preserve">
+    <value>Minimap</value>
+  </data>
+  <data name="pnShow Minimap" xml:space="preserve">
+    <value>Show floor minimap window</value>
+  </data>
+  <data name="pnShow Minimap Help" xml:space="preserve">
+    <value>Inside deep dungeons (except boss floors) shows a small window with this floor's room grid, read straight from the game's own map data; nothing is downloaded or uploaded. Bright tiles are rooms the game map already knows, dim tiles are still unknown. The arrow is you (pointing where you face), blue dots are party members. Room icons show the Cairn of Passage / Return equivalents (lit = ready to use) and gold, silver and bronze coffers: solid = in the game's current coffer list, faded = seen earlier on this floor but no longer in the list (may already be opened). Drag the window to move it. Changes apply immediately; press Save to keep them.</value>
+  </data>
+  <data name="pnMinimap Party" xml:space="preserve">
+    <value>Show party members</value>
+  </data>
+  <data name="pnMinimap Active Only" xml:space="preserve">
+    <value>Only show the known area</value>
+  </data>
+  <data name="pnMinimap Active Only Help" xml:space="preserve">
+    <value>Only draws the rows and columns that contain a known room (or you, a party member or a coffer); turn off to always draw the full 5x5 grid.</value>
+  </data>
+  <data name="pnMinimap Scale" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="pnMinimap Opacity" xml:space="preserve">
+    <value>Background opacity</value>
+  </data>
+  <data name="pnMinimap Lock" xml:space="preserve">
+    <value>Lock position</value>
+  </data>
+  <data name="pnMinimap Click Through" xml:space="preserve">
+    <value>Click-through</value>
+  </data>
+  <data name="pnMinimap Click Through Help" xml:space="preserve">
+    <value>The mouse passes through the minimap to the game behind it, so the minimap cannot be dragged either. Turn this off to move it.</value>
+  </data>
+  <data name="pnMinimap Unavailable" xml:space="preserve">
+    <value>Minimap: no usable game data</value>
   </data>
 </root>

@@ -69,14 +69,18 @@ namespace Pal.Client.Scheduled
                             case SyncType.Download:
                             case SyncType.Upload:
                                 List<PersistentLocation> newLocations = new();
+                                ReadOnlySpan<PersistentLocation> existingLocations = memoryTerritory.Locations.Snapshot();
                                 foreach (var remoteMarker in remoteMarkers)
                                 {
                                     // Both uploads and downloads return the network id to be set, but only the downloaded marker is new as in to-be-saved.
                                     PersistentLocation? localLocation =
-                                        memoryTerritory.Locations.SingleOrDefault(x => x == remoteMarker);
+                                        FindSingle(existingLocations, newLocations, remoteMarker);
                                     if (localLocation != null)
                                     {
                                         localLocation.NetworkId = remoteMarker.NetworkId;
+                                        // 同一格可能對到多筆下載點；Palantir 的次數只增不減，取大的。
+                                        localLocation.CommunityConfirmations = Math.Max(
+                                            localLocation.CommunityConfirmations, remoteMarker.CommunityConfirmations);
                                         continue;
                                     }
 
@@ -140,6 +144,39 @@ namespace Pal.Client.Scheduled
                         memoryTerritory.SyncState = ESyncState.Failed;
                 }
             }
+
+            /// <summary>
+            /// 與 <c>Locations.SingleOrDefault(x =&gt; x == remote)</c> 同義：這一輪開始時的點位加上這一輪剛加進去的
+            /// （<paramref name="added"/> 就是這一輪加進容器的全部）；超過一個相符時照樣由 LINQ 擲同一種例外。
+            /// 不用每筆重新列舉容器：ConcurrentBag 每列舉一次就整包複製一份。
+            /// </summary>
+            private static PersistentLocation? FindSingle(ReadOnlySpan<PersistentLocation> existing,
+                List<PersistentLocation> added, PersistentLocation remote)
+            {
+                PersistentLocation? found = null;
+                int matches = 0;
+                foreach (PersistentLocation location in existing)
+                {
+                    if (location == remote && ++matches == 1)
+                        found = location;
+                }
+
+                foreach (PersistentLocation location in added)
+                {
+                    if (location == remote && ++matches == 1)
+                        found = location;
+                }
+
+                if (matches > 1)
+                    return ThrowMoreThanOneMatch(existing.ToArray(), added, remote);
+
+                return found;
+            }
+
+            // 另開方法：閉包留在這裡，常走的路徑才不會每次呼叫都配置。
+            private static PersistentLocation? ThrowMoreThanOneMatch(PersistentLocation[] existing,
+                List<PersistentLocation> added, PersistentLocation remote)
+                => existing.Concat(added).SingleOrDefault(x => x == remote);
         }
     }
 

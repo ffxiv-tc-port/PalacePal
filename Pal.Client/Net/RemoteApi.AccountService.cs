@@ -19,15 +19,51 @@ namespace Pal.Client.Net
         private readonly SemaphoreSlim _connectLock = new(1, 1);
 
         private async Task<(bool Success, string Error)> TryConnect(CancellationToken cancellationToken,
-            ILoggerFactory? loggerFactory = null, bool retry = true)
+            ILoggerFactory? loggerFactory = null, bool retry = true, bool automatic = true)
         {
             using IDisposable? logScope = _logger.BeginScope("TryConnect");
 
-            var result = await TryConnectImpl(cancellationToken, loggerFactory);
-            if (retry && result.ShouldRetry)
+            (bool Success, string Error, bool ShouldRetry) result;
+            try
+            {
                 result = await TryConnectImpl(cancellationToken, loggerFactory);
+                if (retry && result.ShouldRetry)
+                    result = await TryConnectImpl(cancellationToken, loggerFactory);
+            }
+            catch (Exception e) when (!cancellationToken.IsCancellationRequested)
+            {
+                ReportServerFailure(e.Message, automatic);
+                throw;
+            }
+
+            if (_configuration.Mode == EMode.Online)
+            {
+                if (result.Success)
+                    ReportServerSuccess();
+                else
+                    ReportServerFailure(result.Error, automatic);
+            }
 
             return (result.Success, result.Error);
+        }
+
+        /// <param name="automatic">false＝使用者手動測試（不跳聊天提示）。</param>
+        private void ReportServerFailure(string reason, bool automatic)
+        {
+            if (!_gate.RecordFailure(reason))
+                return;
+
+            _logger.LogWarning(
+                "Could not reach community server {Url}: {Reason}. Only locally recorded traps/coffers will be shown; no automatic retry until {RetryAfter:HH:mm} (manual 'Test Connection' retries immediately)",
+                PalantirUrl, reason, _gate.Status.RetryAfterUtc?.ToLocalTime());
+            if (automatic && Interlocked.Exchange(ref _chatWarnedUnreachable, 1) == 0)
+                _chat.Message(Localization.ConnectionError_UnreachableChat);
+        }
+
+        private void ReportServerSuccess()
+        {
+            if (_gate.RecordSuccess())
+                _logger.LogInformation("Community server {Url} is reachable again", PalantirUrl);
         }
 
         private async Task<(bool Success, string Error, bool ShouldRetry)> TryConnectImpl(
@@ -57,7 +93,14 @@ namespace Pal.Client.Net
                 });
 
                 _logger.LogInformation("Connecting to upstream service at {Url}", RemoteUrl);
-                await _channel.ConnectAsync(cancellationToken);
+                GrpcChannel channel = _channel;
+                TimeSpan timeout = ServerConnectionGate.DefaultConnectTimeout;
+                if (!await ServerConnectionGate.RunWithTimeout(ct => channel.ConnectAsync(ct), timeout, cancellationToken))
+                {
+                    // 留著的話 gRPC 會在背景一直重連。
+                    Dispose();
+                    return (false, string.Format(Localization.ConnectionError_Timeout, (int)timeout.TotalSeconds), false);
+                }
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -178,29 +221,11 @@ namespace Pal.Client.Net
             }
         }
 
-        private async Task<bool> Connect(CancellationToken cancellationToken)
+        // 舊 gRPC 伺服器已停用：刻意一律不連，統計、匯出等舊路徑直接回失敗，也不影響 Palantir 的連線狀態。
+        private Task<bool> Connect(CancellationToken cancellationToken)
         {
-            var result = await TryConnect(cancellationToken);
-            return result.Success;
-        }
-
-        public async Task<string> VerifyConnection(CancellationToken cancellationToken = default)
-        {
-            using IDisposable? logScope = _logger.BeginScope("VerifyConnection");
-
-            _warnedAboutUpgrade = false;
-
-            var connectionResult = await TryConnect(cancellationToken, loggerFactory: _loggerFactory);
-            if (!connectionResult.Success)
-                return string.Format(Localization.ConnectionError_CouldNotConnectToServer, connectionResult.Error);
-
-            _logger.LogInformation("Connection established, trying to verify auth token");
-            var accountClient = new AccountService.AccountServiceClient(_channel);
-            await accountClient.VerifyAsync(new VerifyRequest(), headers: AuthorizedHeaders(),
-                deadline: DateTime.UtcNow.AddSeconds(10), cancellationToken: cancellationToken);
-
-            _logger.LogInformation("Verification returned no errors.");
-            return Localization.ConnectionSuccessful;
+            _logger.LogDebug("Legacy gRPC server {Url} is retired; not connecting", RemoteUrl);
+            return Task.FromResult(false);
         }
 
         internal sealed class LoginInfo

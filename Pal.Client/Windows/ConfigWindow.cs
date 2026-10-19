@@ -1,7 +1,9 @@
 ﻿using Account;
 using Dalamud.Interface;
+using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.ImGuiFileDialog;
+using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using ECommons;
@@ -258,8 +260,25 @@ namespace Pal.Client.Windows
                 ImGuiComponents.HelpMarker(Localization.pnDisplay_Potential_Trap_Locations_Help);
                 Spacing(true); ImGui.ColorEdit4(Localization.pnTrap_Outline_Colour, ref P.Config.TrapColor, ImGuiColorEditFlags.NoInputs);
                 Spacing(true); ImGui.Checkbox(Localization.pnDraw_Traps_Filled, ref _trapConfig.Fill);
+                DrawCommunityThreshold("##trapThreshold", ref P.Config.CommunityTrapThreshold);
+                Spacing(true); ImGui.Checkbox(Localization.pnTrap_Kind_Labels, ref P.Config.TrapKindLabels);
+                ImGuiComponents.HelpMarker(Localization.pnTrap_Kind_Labels_Help);
+                Spacing(true); ImGui.Checkbox(Localization.pnHide_Stepped_Traps, ref P.Config.HideSteppedTraps);
+                ImGuiComponents.HelpMarker(Localization.pnHide_Stepped_Traps_Help);
                 Spacing(); ImGui.Checkbox(Localization.pnHide_Traps_on_Safety_Sight_Use, ref _trapConfig.OnlyVisibleAfterPomander);
                 ImGuiComponents.HelpMarker(Localization.pnHide_Traps_on_Safety_Sight_Use_Help);
+
+                // 上面那個是總開關,底下兩個是各自的魔陶器細項(預設都開)
+                using (ImRaii.Disabled(!_trapConfig.OnlyVisibleAfterPomander))
+                {
+                    ImGui.Indent();
+                    Spacing(); ImGui.Checkbox(Localization.pnHide_Traps_on_Safety_Use, ref P.Config.HideTrapsOnSafety);
+                    ImGuiComponents.HelpMarker(Localization.pnHide_Traps_on_Safety_Use_Help);
+                    Spacing(); ImGui.Checkbox(Localization.pnHide_Traps_on_Sight_Use, ref P.Config.HideTrapsOnSight);
+                    ImGuiComponents.HelpMarker(Localization.pnHide_Traps_on_Sight_Use_Help);
+                    ImGui.Unindent();
+                }
+
                 ImGuiGroup.EndGroupBox();
             }
 
@@ -269,8 +288,18 @@ namespace Pal.Client.Windows
                 ImGui.Checkbox(Localization.pnDisplay_Potential_Accursed_Hoard_Coffer_Locations, ref _hoardConfig.Show);
                 ImGuiComponents.HelpMarker(Localization.pnDisplay_Potential_Accursed_Hoard_Coffer_Locations_Help);
                 Spacing(true); ImGui.ColorEdit4(Localization.pnAccursed_Hoard_Outline_Colour, ref _hoardConfig.Color, ImGuiColorEditFlags.NoInputs);
+                DrawCommunityThreshold("##hoardThreshold", ref P.Config.CommunityHoardThreshold);
                 Spacing(); ImGui.Checkbox(Localization.pnHide_Accursed_Hoard_Locations_on_Intuition_Use, ref _hoardConfig.OnlyVisibleAfterPomander);
                 ImGuiComponents.HelpMarker(Localization.pnHide_Accursed_Hoard_Locations_on_Intuition_Use_Help);
+
+                using (ImRaii.Disabled(!_hoardConfig.OnlyVisibleAfterPomander))
+                {
+                    ImGui.Indent();
+                    Spacing(); ImGui.Checkbox(Localization.pnHide_Hoard_on_Intuition_Use, ref P.Config.HideHoardOnIntuition);
+                    ImGuiComponents.HelpMarker(Localization.pnHide_Hoard_on_Intuition_Use_Help);
+                    ImGui.Unindent();
+                }
+
                 ImGuiGroup.EndGroupBox();
             }
 
@@ -319,6 +348,37 @@ namespace Pal.Client.Windows
                 Spacing(true); if (ImGui.Checkbox(Localization.pnHighlight_When_Activated, ref P.Config.DisplayExitOnlyActive)) UpdateRender();
                 ImGuiComponents.HelpMarker(Localization.pnHighlight_When_Activated_Help);
                 Spacing(); if (ImGui.Checkbox(Localization.pnText_overlay, ref P.Config.ExitText)) UpdateRender();
+
+                ImGui.Separator();
+
+                ImGui.PushID("return");
+                if (ImGui.Checkbox(Localization.pnDisplay_Return_Devices, ref P.Config.DisplayReturn)) UpdateRender();
+                ImGuiComponents.HelpMarker(Localization.pnDisplay_Return_Devices_Help);
+                Spacing(true); if (ImGui.ColorEdit4(Localization.pnReturn_Outline_Colour, ref P.Config.ReturnColor, ImGuiColorEditFlags.NoInputs)) UpdateRender();
+                Spacing(); if (ImGui.Checkbox(Localization.pnText_overlay, ref P.Config.ReturnText)) UpdateRender();
+                ImGui.PopID();
+                ImGuiGroup.EndGroupBox();
+            }
+
+            ImGuiEx.Text(Localization.pnMinimap);
+            if (ImGuiGroup.BeginGroupBox())
+            {
+                ImGui.PushID("minimap");
+                ImGui.Checkbox(Localization.pnShow_Minimap, ref P.Config.MinimapShow);
+                ImGuiComponents.HelpMarker(Localization.pnShow_Minimap_Help);
+                Spacing(true); ImGui.Checkbox(Localization.pnMinimap_Party, ref P.Config.MinimapParty);
+                Spacing(true); ImGui.Checkbox(Localization.pnMinimap_Active_Only, ref P.Config.MinimapActiveOnly);
+                ImGuiComponents.HelpMarker(Localization.pnMinimap_Active_Only_Help);
+                Spacing(true); ImGui.SetNextItemWidth(160f);
+                ImGui.SliderFloat(Localization.pnMinimap_Scale, ref P.Config.MinimapScale, 0.5f, 2f);
+                P.Config.MinimapScale = Math.Clamp(P.Config.MinimapScale, 0.5f, 2f);
+                Spacing(true); ImGui.SetNextItemWidth(160f);
+                ImGui.SliderFloat(Localization.pnMinimap_Opacity, ref P.Config.MinimapOpacity, 0f, 1f);
+                P.Config.MinimapOpacity = Math.Clamp(P.Config.MinimapOpacity, 0f, 1f);
+                Spacing(true); ImGui.Checkbox(Localization.pnMinimap_Lock, ref P.Config.MinimapLocked);
+                Spacing(); ImGui.Checkbox(Localization.pnMinimap_Click_Through, ref P.Config.MinimapClickThrough);
+                ImGuiComponents.HelpMarker(Localization.pnMinimap_Click_Through_Help);
+                ImGui.PopID();
                 ImGuiGroup.EndGroupBox();
             }
 
@@ -328,6 +388,10 @@ namespace Pal.Client.Windows
                 ImGui.SetNextItemWidth(200f);
                 ImGui.SliderFloat(Localization.pnText_overlay_font_scale, ref P.Config.OverlayFScale, 0.1f, 5f);
                 P.Config.OverlayFScale.ValidateRange(0.1f, 10f);
+                ImGui.SetNextItemWidth(200f);
+                ImGui.SliderFloat(Localization.pnUnconfirmed_Marker_Opacity, ref P.Config.UnconfirmedMarkerAlpha, 0.05f, 1f);
+                P.Config.UnconfirmedMarkerAlpha.ValidateRange(0.05f, 1f);
+                ImGuiComponents.HelpMarker(Localization.pnUnconfirmed_Marker_Opacity_Help);
                 ImGuiGroup.EndGroupBox();
             }
 
@@ -340,6 +404,15 @@ namespace Pal.Client.Windows
 
             ImGui.EndTabItem();
 
+        }
+
+        private static void DrawCommunityThreshold(string id, ref int threshold)
+        {
+            Spacing(true);
+            ImGui.SetNextItemWidth(120f);
+            ImGui.SliderInt(Localization.pnCommunity_Min_Confirmations + id, ref threshold, 0, CommunityThreshold.Max);
+            threshold = Math.Clamp(threshold, 0, CommunityThreshold.Max);
+            ImGuiComponents.HelpMarker(Localization.pnCommunity_Min_Confirmations_Help);
         }
 
         private void UpdateRender()
@@ -367,11 +440,27 @@ namespace Pal.Client.Windows
             ImGui.BeginDisabled(_configuration.Mode != EMode.Online);
             if (ImGui.Button(Localization.Config_TestConnection))
                 TestConnection();
+            if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+            {
+                ImGui.PushStyleVar(ImGuiStyleVar.Alpha, 1f);
+                ImGui.SetTooltip(string.Format(Localization.Config_TestConnection_Tooltip, RemoteApi.PalantirUrl));
+                ImGui.PopStyleVar();
+            }
 
             if (_connectionText != null)
-                ImGui.Text(_connectionText);
+                ImGui.TextWrapped(_connectionText);
 
             ImGui.EndDisabled();
+
+            if (_configuration.Mode == EMode.Online)
+            {
+                ImGui.TextWrapped(string.Format(Localization.Config_PalantirServer, RemoteApi.PalantirUrl));
+                DrawServerStatus();
+                ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudGrey);
+                ImGui.TextWrapped(string.Format(Localization.Config_LegacyServerRetired, RemoteApi.RemoteUrl));
+                ImGui.PopStyleColor();
+            }
+
             ImGui.EndTabItem();
 
         }
@@ -473,8 +562,9 @@ namespace Pal.Client.Windows
             if (_territoryState.IsInDeepDungeon())
             {
                 MemoryTerritory? memoryTerritory = _floorService.GetTerritoryIfReady(_territoryState.LastTerritory);
-                ImGui.Text($"You are in a deep dungeon, territory type {_territoryState.LastTerritory}.");
-                ImGui.Text($"Sync State = {memoryTerritory?.SyncState.ToString() ?? "Unknown"}");
+                ImGui.Text(string.Format(Localization.Debug_InDeepDungeon, _territoryState.LastTerritory));
+                ImGui.Text(string.Format(Localization.Debug_SyncState,
+                    memoryTerritory?.SyncState.ToString() ?? Localization.Debug_SyncState_Unknown));
                 ImGui.Text($"{_debugState.DebugMessage}");
 
                 ImGui.Indent();
@@ -483,14 +573,14 @@ namespace Pal.Client.Windows
                     if (_trapConfig.Show)
                     {
                         int traps = memoryTerritory.Locations.Count(x => x.Type == MemoryLocation.EType.Trap);
-                        ImGui.Text($"{traps} known trap{(traps == 1 ? "" : "s")}");
+                        ImGui.Text(string.Format(Localization.Debug_KnownTraps, traps));
                     }
 
                     if (_hoardConfig.Show)
                     {
                         int hoardCoffers =
                             memoryTerritory.Locations.Count(x => x.Type == MemoryLocation.EType.Hoard);
-                        ImGui.Text($"{hoardCoffers} known hoard coffer{(hoardCoffers == 1 ? "" : "s")}");
+                        ImGui.Text(string.Format(Localization.Debug_KnownHoardCoffers, hoardCoffers));
                     }
 
                     if (_silverConfig.Show)
@@ -498,8 +588,7 @@ namespace Pal.Client.Windows
                         int silverCoffers =
                             _floorService.EphemeralLocations.Count(x =>
                                 x.Type == MemoryLocation.EType.SilverCoffer);
-                        ImGui.Text(
-                            $"{silverCoffers} silver coffer{(silverCoffers == 1 ? "" : "s")} visible on current floor");
+                        ImGui.Text(string.Format(Localization.Debug_SilverCoffersVisible, silverCoffers));
                     }
 
                     if (_goldConfig.Show)
@@ -507,25 +596,52 @@ namespace Pal.Client.Windows
                         int goldCoffers =
                             _floorService.EphemeralLocations.Count(x =>
                                 x.Type == MemoryLocation.EType.GoldCoffer);
-                        ImGui.Text(
-                            $"{goldCoffers} silver coffer{(goldCoffers == 1 ? "" : "s")} visible on current floor");
+                        ImGui.Text(string.Format(Localization.Debug_GoldCoffersVisible, goldCoffers));
                     }
 
-                    ImGui.Text($"Pomander of Sight: {_territoryState.PomanderOfSight}");
-                    ImGui.Text($"Pomander of Intuition: {_territoryState.PomanderOfIntuition}");
+                    ImGui.Text(string.Format(Localization.Debug_PomanderOfSight, _territoryState.PomanderOfSight));
+                    ImGui.Text(string.Format(Localization.Debug_PomanderOfIntuition, _territoryState.PomanderOfIntuition));
+                    ImGui.Text(string.Format(Localization.Debug_PomanderFromMemory,
+                        _territoryState.SafetyActiveFromMemory,
+                        _territoryState.SightActiveFromMemory,
+                        _territoryState.IntuitionActiveFromMemory));
                 }
                 else
-                    ImGui.Text("Could not query current trap/coffer count.");
+                    ImGui.Text(Localization.Debug_CouldNotQueryCount);
 
                 ImGui.Unindent();
-                ImGui.TextWrapped(
-                    "Traps and coffers may not be discovered even after using a pomander if they're far away (around 1,5-2 rooms).");
+                ImGui.TextWrapped(Localization.Debug_TrapsCoffersNotDiscoveredNote);
             }
             else
                 ImGui.Text(Localization.Config_Debug_NotInADeepDungeon);
 
             ImGui.EndTabItem();
 
+        }
+
+        private void DrawServerStatus()
+        {
+            ServerStatus status = _remoteApi.ServerStatus;
+            string at = status.LastAttemptUtc?.ToLocalTime().ToString("HH:mm") ?? "?";
+            switch (status.State)
+            {
+                case EServerState.Connected:
+                    ImGui.TextWrapped(string.Format(Localization.Config_ServerStatus_Connected, at));
+                    break;
+                case EServerState.Unreachable:
+                    ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudOrange);
+                    ImGui.TextWrapped(string.Format(Localization.Config_ServerStatus_Unreachable, at));
+                    ImGui.PopStyleColor();
+                    if (ImGui.IsItemHovered())
+                        ImGui.SetTooltip(string.Format(Localization.Config_ServerStatus_UnreachableTooltip,
+                            status.Reason ?? "?", status.RetryAfterUtc?.ToLocalTime().ToString("HH:mm") ?? "?"));
+                    break;
+                default:
+                    ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudGrey);
+                    ImGui.TextWrapped(Localization.Config_ServerStatus_NotAttempted);
+                    ImGui.PopStyleColor();
+                    break;
+            }
         }
 
         internal void TestConnection()

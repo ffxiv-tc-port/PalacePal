@@ -62,11 +62,15 @@ namespace Pal.Client
 
             // windows that have logic to open on startup
             _serviceProvider.GetRequiredService<AgreementWindow>();
+            _serviceProvider.GetRequiredService<MinimapWindow>();
 
             // initialize components that are mostly self-contained/self-registered
             _serviceProvider.GetRequiredService<GameHooks>();
             _serviceProvider.GetRequiredService<FrameworkService>();
             _serviceProvider.GetRequiredService<ChatService>();
+
+            // 唯讀 IPC 供應端：註冊在這裡才保證 FloorService 已經可以解析。
+            _serviceProvider.GetRequiredService<IpcProvider>();
 
             // eager load any commands to find errors now, not when running them
             _serviceProvider.GetRequiredService<IEnumerable<ISubCommand>>();
@@ -146,7 +150,8 @@ namespace Pal.Client
                         await using var db = scope.ServiceProvider.GetRequiredService<PalClientContext>();
                         await using SqliteConnection source = new(db.Database.GetConnectionString());
                         await source.OpenAsync();
-                        await using SqliteConnection backup = new($"Data Source={backupPath}");
+                        // 與主連線一樣不經連線池（理由見 DependencyInjectionContext 的連線字串）。
+                        await using SqliteConnection backup = new($"Data Source={backupPath};Pooling=False");
                         source.BackupDatabase(backup);
                         SqliteConnection.ClearPool(backup);
                     }
@@ -183,7 +188,8 @@ namespace Pal.Client
             await using var dbContext = scope.ServiceProvider.GetRequiredService<PalClientContext>();
             var cleanup = scope.ServiceProvider.GetRequiredService<Cleanup>();
 
-            cleanup.Purge(dbContext);
+            cleanup.Purge(dbContext, out var purgeLog);
+            cleanup.EmitPending(purgeLog);
 
             await dbContext.SaveChangesAsync();
         }

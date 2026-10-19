@@ -55,6 +55,7 @@ namespace Pal.Client
             ICondition condition,
             ICommandManager commandManager,
             IDataManager dataManager,
+            ITextureProvider textureProvider,
             Plugin plugin)
         {
             _logger.LogInformation("Building dalamud service container for {Assembly}",
@@ -85,10 +86,13 @@ namespace Pal.Client
             _serviceCollection.AddSingleton(condition);
             _serviceCollection.AddSingleton(commandManager);
             _serviceCollection.AddSingleton(dataManager);
+            _serviceCollection.AddSingleton(textureProvider);
             _serviceCollection.AddSingleton(new WindowSystem(typeof(DependencyInjectionContext).AssemblyQualifiedName));
 
+            // 不用連線池：池的清理計時器在執行緒池上等核心號誌，那個控制代碼一旦失效就是未處理例外，整個遊戲跟著崩潰。
+            // 資料庫只在換區、發現新陷阱、匯入這類事件時才存取，每次重開連線的代價可以忽略。
             _sqliteConnectionString =
-                $"Data Source={Path.Join(pluginInterface.GetPluginConfigDirectory(), DatabaseFileName)}";
+                $"Data Source={Path.Join(pluginInterface.GetPluginConfigDirectory(), DatabaseFileName)};Pooling=False";
         }
 
         public IServiceProvider BuildServiceContainer()
@@ -112,6 +116,7 @@ namespace Pal.Client
             _serviceCollection.AddScoped<IPalacePalConfiguration>(sp =>
                 sp.GetRequiredService<ConfigurationManager>().Load());
             _serviceCollection.AddTransient<RepoVerification>();
+            _serviceCollection.AddScoped<IpcProvider>();
 
             // commands
             _serviceCollection.AddScoped<PalConfigCommand>();
@@ -122,9 +127,18 @@ namespace Pal.Client
 
             // territory & marker related services
             _serviceCollection.AddScoped<TerritoryState>();
+            _serviceCollection.AddScoped<PomanderSensor>();
             _serviceCollection.AddScoped<FrameworkService>();
             _serviceCollection.AddScoped<ChatService>();
             _serviceCollection.AddScoped<FloorService>();
+            _serviceCollection.AddScoped(sp =>
+            {
+                var logger = sp.GetRequiredService<ILogger<ConfirmedLocationStore>>();
+                string path = Path.Join(sp.GetRequiredService<IDalamudPluginInterface>().GetPluginConfigDirectory(),
+                    ConfirmedLocationStore.FileName);
+                return new ConfirmedLocationStore(path, m => logger.LogInformation("{Message}", m),
+                    m => logger.LogWarning("{Message}", m));
+            });
             _serviceCollection.AddScoped<ImportService>();
 
             // windows & related services
@@ -132,6 +146,7 @@ namespace Pal.Client
             _serviceCollection.AddScoped<ConfigWindow>();
             _serviceCollection.AddScoped<StatisticsService>();
             _serviceCollection.AddScoped<StatisticsWindow>();
+            _serviceCollection.AddScoped<MinimapWindow>();
 
             // rendering
             _serviceCollection.AddScoped<SplatoonRenderer>();

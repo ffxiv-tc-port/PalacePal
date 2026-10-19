@@ -3,6 +3,7 @@
     internal enum ELayer
     {
         TrapHoard,
+        TrapHoardConfirmed,
         RegularCoffers,
         Test,
     }

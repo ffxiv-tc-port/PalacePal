@@ -46,6 +46,7 @@ namespace Pal.Client.Commands
             if (state == null)
                 return;
 
+            // IClientState.LocalPlayer 在 API13 已標為過時，它只是 IObjectTable.LocalPlayer 的純轉發，所以直接讀後者。
             var playerPosition = _objectTable.LocalPlayer?.Position;
             if (playerPosition == null)
                 return;

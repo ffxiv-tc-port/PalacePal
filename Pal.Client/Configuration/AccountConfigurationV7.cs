@@ -66,14 +66,27 @@ namespace Pal.Client.Configuration
 
         public List<string> CachedRoles { get; set; } = new();
 
+        // 上一次 DPAPI 解密成功的結果。密文或熵換了（參考不同）就重解；
+        // 失敗刻意不記，照舊每次重試。
+        private DecryptedId? _decrypted;
+
         private Guid? DecryptAccountId()
         {
             if (Format == EFormat.UseProtectedData && ConfigurationData.SupportsDpapi)
             {
+                string encryptedId = EncryptedId;
+                byte[]? entropy = Entropy;
+                DecryptedId? decrypted = _decrypted;
+                if (decrypted != null && ReferenceEquals(decrypted.EncryptedId, encryptedId) &&
+                    ReferenceEquals(decrypted.Entropy, entropy))
+                    return decrypted.Value;
+
                 try
                 {
-                    byte[] guidBytes = ProtectedData.Unprotect(Convert.FromBase64String(EncryptedId), Entropy, DataProtectionScope.CurrentUser);
-                    return new Guid(guidBytes);
+                    byte[] guidBytes = ProtectedData.Unprotect(Convert.FromBase64String(encryptedId), entropy, DataProtectionScope.CurrentUser);
+                    Guid value = new Guid(guidBytes);
+                    _decrypted = new DecryptedId(encryptedId, entropy, value);
+                    return value;
                 }
                 catch (Exception e)
                 {
@@ -87,6 +100,20 @@ namespace Pal.Client.Configuration
                 return Guid.Parse(EncryptedId);
             else
                 return null;
+        }
+
+        private sealed class DecryptedId
+        {
+            public DecryptedId(string encryptedId, byte[]? entropy, Guid value)
+            {
+                EncryptedId = encryptedId;
+                Entropy = entropy;
+                Value = value;
+            }
+
+            public string EncryptedId { get; }
+            public byte[]? Entropy { get; }
+            public Guid Value { get; }
         }
 
         private (string encryptedId, byte[]? entropy, EFormat format) EncryptAccountId(Guid g)

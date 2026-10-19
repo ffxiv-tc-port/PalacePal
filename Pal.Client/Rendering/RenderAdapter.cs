@@ -53,6 +53,9 @@ namespace Pal.Client.Rendering
         public void SetLayer(ELayer layer, IReadOnlyList<SplatoonElement> elements)
             => _implementation.SetLayer(layer, elements);
 
+        public void SetLayers(params (ELayer Layer, IReadOnlyList<SplatoonElement> Elements)[] layers)
+            => _implementation.SetLayers(layers);
+
         public void ResetLayer(ELayer layer)
             => _implementation.ResetLayer(layer);
 
@@ -71,5 +74,10 @@ namespace Pal.Client.Rendering
         {
             _implementation.UpdateExitElement();
         }
+
+        public bool TrapLabelsNeedRefresh => _implementation.TrapLabelsNeedRefresh;
+
+        public void UpdateTrapLabels(bool show)
+            => _implementation.UpdateTrapLabels(show);
     }
 }
