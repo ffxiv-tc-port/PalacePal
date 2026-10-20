@@ -304,5 +304,35 @@ namespace Pal.Client.Floors
                     memoryTerritory.ReadyState = MemoryTerritory.EReadyState.Importing;
             }
         }
+
+        /// <summary>
+        /// 放下所有區域點位手上的 Splatoon 元素，回傳放下的個數。只在 framework 執行緒呼叫。
+        /// 元素裡的物件屬於建立它的那一代 Splatoon，留著會讓已卸載的舊版 Splatoon 回收不了。
+        /// </summary>
+        public int ForgetRenderElements()
+        {
+            int count = 0;
+            foreach (var memoryTerritory in _territories.Values)
+            {
+                lock (memoryTerritory.LockObj)
+                {
+                    foreach (var location in memoryTerritory.Locations)
+                        count += ForgetRenderElements(location);
+                }
+            }
+
+            foreach (var location in _ephemeralLocations)
+                count += ForgetRenderElements(location);
+
+            return count;
+        }
+
+        private static int ForgetRenderElements(MemoryLocation location)
+        {
+            int count = (location.RenderElement != null ? 1 : 0) + (location.RenderElement2 != null ? 1 : 0);
+            location.RenderElement = null;
+            location.RenderElement2 = null;
+            return count;
+        }
     }
 }

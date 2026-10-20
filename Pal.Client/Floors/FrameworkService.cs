@@ -7,6 +7,7 @@ using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Plugin.Services;
 using ECommons;
 using ECommons.Logging;
+using ECommons.SplatoonAPI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Pal.Client.Configuration;
@@ -43,6 +44,9 @@ namespace Pal.Client.Floors
         private bool? _lastHideHoardCoffers;
         private int _pomanderRedrawCount;
         private bool _pomanderRedrawCapLogged;
+
+        // 上次看到的 SplatoonAPI 連線代數（每次連上 Splatoon 加一）；建構時取初值，之後只在 framework 執行緒讀寫。
+        private int _splatoonVersion = Splatoon.Version;
 
         private readonly TrapLabelState _trapLabels = new();
 
@@ -116,6 +120,9 @@ namespace Pal.Client.Floors
         {
             _framework.Update -= OnUpdate;
             _configurationManager.Saved -= OnSaved;
+
+            // 就算這一份插件之後被別的東西留住，也不連帶留住最後畫過標記的那一代 Splatoon。
+            ForgetRenderElements();
         }
 
         private void OnSaved(object? sender, IPalacePalConfiguration? config)
@@ -124,8 +131,41 @@ namespace Pal.Client.Floors
             _trapLabels.Dirty = true;
         }
 
+        /// <summary>放下手上所有 Splatoon 元素，回傳個數；之後要畫就重建。只在 framework 執行緒呼叫。</summary>
+        private int ForgetRenderElements()
+        {
+            int count = _floorService.ForgetRenderElements();
+            foreach (var location in _confirmedRenderLocations)
+                count += (location.RenderElement != null ? 1 : 0) + (location.RenderElement2 != null ? 1 : 0);
+
+            _confirmedRenderLocations.Clear();
+            _previousConfirmed.Clear();
+            return count;
+        }
+
+        /// <summary>
+        /// Splatoon 換代（重新載入後重連）時，舊元素屬於已卸載的那一代、只會留住它；全部放下並要求重畫。
+        /// 刻意不放在 SplatoonOnConnect：它第一次是在 DI 初始化的背景執行緒上被呼叫。
+        /// </summary>
+        private void CheckSplatoonGeneration()
+        {
+            int version = Splatoon.Version;
+            if (version == _splatoonVersion)
+                return;
+
+            int previous = _splatoonVersion;
+            _splatoonVersion = version;
+            int forgotten = ForgetRenderElements();
+            _renderAdapter.RequireRedraw = true;
+            _logger.LogInformation(
+                "PalacePal:Splatoon 重新連線（連線代數 {Previous} -> {Version}），放下 {Count} 個舊標記元素，下一次在深層迷宮時重畫。",
+                previous, version, forgotten);
+        }
+
         private void OnUpdate(object framework)
         {
+            CheckSplatoonGeneration();
+
             if (_configuration.FirstUse)
                 return;
 
