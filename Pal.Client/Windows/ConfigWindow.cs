@@ -401,9 +401,6 @@ namespace Pal.Client.Windows
             save = ImGui.Button(Localization.Save);
             ImGui.SameLine();
             saveAndClose = ImGui.Button(Localization.SaveAndClose);
-
-            ImGui.EndTabItem();
-
         }
 
         private static void DrawCommunityThreshold(string id, ref int threshold)
@@ -460,9 +457,6 @@ namespace Pal.Client.Windows
                 ImGui.TextWrapped(string.Format(Localization.Config_LegacyServerRetired, RemoteApi.RemoteUrl));
                 ImGui.PopStyleColor();
             }
-
-            ImGui.EndTabItem();
-
         }
 
         private void DrawImportTab()
@@ -515,9 +509,6 @@ namespace Pal.Client.Windows
                     UndoImport(importHistory.Id);
                 ImGui.EndDisabled();
             }
-
-            ImGui.EndTabItem();
-
         }
 
         private void DrawExportTab()
@@ -551,8 +542,6 @@ namespace Pal.Client.Windows
                 if (ImGui.Button(Localization.Config_StartExport))
                     DoExport(_saveExportPath);
                 ImGui.EndDisabled();
-
-                ImGui.EndTabItem();
             }
         }
 
@@ -614,9 +603,6 @@ namespace Pal.Client.Windows
             }
             else
                 ImGui.Text(Localization.Config_Debug_NotInADeepDungeon);
-
-            ImGui.EndTabItem();
-
         }
 
         private void DrawServerStatus()
