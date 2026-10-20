@@ -256,7 +256,7 @@ namespace Pal.Client
 
         public void Dispose()
         {
-            _commandManager.RemoveHandler("/pal");
+            _commandManager?.RemoveHandler("/pal");
 
             if (_loadState == ELoadState.Loaded)
             {
