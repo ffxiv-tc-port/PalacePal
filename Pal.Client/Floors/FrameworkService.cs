@@ -74,8 +74,9 @@ namespace Pal.Client.Floors
         /// </summary>
         private const int MaxPomanderRedrawsPerTerritory = 100;
 
-        internal Queue<IQueueOnFrameworkThread> EarlyEventQueue { get; } = new();
-        internal Queue<IQueueOnFrameworkThread> LateEventQueue { get; } = new();
+        // 任何執行緒都可能 Enqueue（下載完成在執行緒池上）；只在 framework 執行緒取出處理。
+        internal ConcurrentQueue<IQueueOnFrameworkThread> EarlyEventQueue { get; } = new();
+        internal ConcurrentQueue<IQueueOnFrameworkThread> LateEventQueue { get; } = new();
         internal ConcurrentQueue<nint> NextUpdateObjects { get; } = new();
 
         /// <summary>踩到陷阱的位置（動作效果 hook 寫入、任何執行緒）；只在 framework 執行緒取出記錄。</summary>
