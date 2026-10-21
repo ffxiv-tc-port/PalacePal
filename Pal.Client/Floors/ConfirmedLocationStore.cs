@@ -173,8 +173,9 @@ namespace Pal.Client.Floors
             => Find(territory, kind, position) != null;
 
         /// <summary>
-        /// 記一次觀測。同一次樓層造訪內同一點只算一次；新點立刻落地，次數／時間的更新等
-        /// <see cref="FlushIfDirty"/>（換區、卸載）一起寫。
+        /// 記一次觀測。同一次樓層造訪內同一點只算一次；本身不寫檔。
+        /// 回 <see cref="EObserveResult.Added"/> 時呼叫端要在同一幀呼叫 <see cref="FlushIfDirty"/>（新點當幀落地，
+        /// 同幀多點只寫一次）；次數／時間的更新等換區、卸載時一起寫。
         /// </summary>
         public EObserveResult Observe(ushort territory, int floor, EConfirmedKind kind, Vector3 position,
             EConfirmMethod method)
@@ -235,7 +236,6 @@ namespace Pal.Client.Floors
 
             _logInfo($"PalacePal:我方確認資料庫新增 1 點（區域 {territory}、第 {floor} 層、{kind}、方式 {method}、"
                      + $"座標 {position.X:F1},{position.Y:F1},{position.Z:F1}），本區共 {list.Count} 點。");
-            FlushIfDirty();
             return EObserveResult.Added;
         }
 

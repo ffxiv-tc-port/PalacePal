@@ -584,11 +584,20 @@ namespace Pal.Client.Floors
             ushort territory = (ushort)_territoryState.LastTerritory;
 
             bool added = false;
-            foreach (var (kind, position, source) in _confirmCandidates)
+            try
             {
-                var method = ConfirmationRules.Classify(kind, source, sight, intuition, hoardFound);
-                if (_confirmedStore.Observe(territory, _pomanderSensor.CurrentFloor, kind, position, method) == EObserveResult.Added)
-                    added = true;
+                foreach (var (kind, position, source) in _confirmCandidates)
+                {
+                    var method = ConfirmationRules.Classify(kind, source, sight, intuition, hoardFound);
+                    if (_confirmedStore.Observe(territory, _pomanderSensor.CurrentFloor, kind, position, method) == EObserveResult.Added)
+                        added = true;
+                }
+            }
+            finally
+            {
+                // 新點當幀落地；同一幀加了幾點都只整份重寫一次。
+                if (added)
+                    _confirmedStore.FlushIfDirty();
             }
 
             return added;
