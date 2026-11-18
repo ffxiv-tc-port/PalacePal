@@ -387,7 +387,15 @@ namespace Pal.Client.Windows
             {
                 ImGui.SetNextItemWidth(200f);
                 ImGui.SliderFloat(Localization.pnText_overlay_font_scale, ref P.Config.OverlayFScale, 0.1f, 5f);
+                bool overlayScaleEdited = ImGui.IsItemDeactivatedAfterEdit();
                 P.Config.OverlayFScale.ValidateRange(0.1f, 10f);
+                ImGuiComponents.HelpMarker(string.Format(Localization.pnText_overlay_font_scale_Help, OverlayStyle.BaseScale));
+                if (overlayScaleEdited)
+                {
+                    // 放開滑桿才重送一次；金／銀寶箱標籤在下次重建圖層時才換字級。
+                    UpdateRender();
+                    Plugin.P._rootScope!.ServiceProvider.GetRequiredService<RenderAdapter>()._implementation.TrapLabelsNeedRefresh = true;
+                }
                 ImGui.SetNextItemWidth(200f);
                 ImGui.SliderFloat(Localization.pnUnconfirmed_Marker_Opacity, ref P.Config.UnconfirmedMarkerAlpha, 0.05f, 1f);
                 P.Config.UnconfirmedMarkerAlpha.ValidateRange(0.05f, 1f);

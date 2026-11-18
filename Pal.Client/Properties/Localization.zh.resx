@@ -650,4 +650,25 @@
   <data name="pnMinimap Unavailable" xml:space="preserve">
     <value>小地圖：讀不到合理的遊戲資料</value>
   </data>
+  <data name="Overlay Gold Coffer" xml:space="preserve">
+    <value>金寶箱</value>
+  </data>
+  <data name="Overlay Silver Coffer" xml:space="preserve">
+    <value>銀寶箱</value>
+  </data>
+  <data name="Overlay Bronze Coffer" xml:space="preserve">
+    <value>銅寶箱</value>
+  </data>
+  <data name="Overlay Mimic Coffer" xml:space="preserve">
+    <value>擬態怪寶箱</value>
+  </data>
+  <data name="Overlay Passage" xml:space="preserve">
+    <value>通道</value>
+  </data>
+  <data name="Overlay Return" xml:space="preserve">
+    <value>再生裝置</value>
+  </data>
+  <data name="pnText overlay font scale Help" xml:space="preserve">
+    <value>所有疊字標籤（陷阱、寶箱、通道）的文字大小；實際顯示為此值的 {0} 倍。</value>
+  </data>
 </root>

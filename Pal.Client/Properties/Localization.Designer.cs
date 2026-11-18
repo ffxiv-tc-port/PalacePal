@@ -1240,6 +1240,69 @@ namespace Pal.Client.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Gold Coffer
+        /// </summary>
+        internal static string Overlay_Gold_Coffer {
+            get {
+                return ResourceManager.GetString("Overlay Gold Coffer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Silver Coffer
+        /// </summary>
+        internal static string Overlay_Silver_Coffer {
+            get {
+                return ResourceManager.GetString("Overlay Silver Coffer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bronze Coffer
+        /// </summary>
+        internal static string Overlay_Bronze_Coffer {
+            get {
+                return ResourceManager.GetString("Overlay Bronze Coffer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mimic Coffer
+        /// </summary>
+        internal static string Overlay_Mimic_Coffer {
+            get {
+                return ResourceManager.GetString("Overlay Mimic Coffer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Passage
+        /// </summary>
+        internal static string Overlay_Passage {
+            get {
+                return ResourceManager.GetString("Overlay Passage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Return
+        /// </summary>
+        internal static string Overlay_Return {
+            get {
+                return ResourceManager.GetString("Overlay Return", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Size of every text label drawn in the world (traps, coffers, passages). Labels are drawn at {0} times this value.
+        /// </summary>
+        internal static string pnText_overlay_font_scale_Help {
+            get {
+                return ResourceManager.GetString("pnText overlay font scale Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Text overlay.
         /// </summary>
         internal static string pnText_overlay {

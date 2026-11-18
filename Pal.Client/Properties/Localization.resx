@@ -650,4 +650,25 @@ No automatic retry until {1}; "Test Connection" retries immediately.</value>
   <data name="pnMinimap Unavailable" xml:space="preserve">
     <value>Minimap: no usable game data</value>
   </data>
+  <data name="Overlay Gold Coffer" xml:space="preserve">
+    <value>Gold Coffer</value>
+  </data>
+  <data name="Overlay Silver Coffer" xml:space="preserve">
+    <value>Silver Coffer</value>
+  </data>
+  <data name="Overlay Bronze Coffer" xml:space="preserve">
+    <value>Bronze Coffer</value>
+  </data>
+  <data name="Overlay Mimic Coffer" xml:space="preserve">
+    <value>Mimic Coffer</value>
+  </data>
+  <data name="Overlay Passage" xml:space="preserve">
+    <value>Passage</value>
+  </data>
+  <data name="Overlay Return" xml:space="preserve">
+    <value>Return</value>
+  </data>
+  <data name="pnText overlay font scale Help" xml:space="preserve">
+    <value>Size of every text label drawn in the world (traps, coffers, passages). Labels are drawn at {0} times this value.</value>
+  </data>
 </root>

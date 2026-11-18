@@ -679,10 +679,10 @@ namespace Pal.Client.Floors
                 element.Color = color;
                 if (P.Config.GoldText)
                 {
-                    element.Delegate.overlayBGColor = 0;
+                    element.Delegate.overlayBGColor = OverlayStyle.LabelBackground;
                     element.Delegate.overlayVOffset = 0.6f;
-                    element.Delegate.overlayFScale = P.Config.OverlayFScale;
-                    element.Delegate.overlayText = " Gold Treasure Coffer";
+                    element.Delegate.overlayFScale = OverlayStyle.FontScale;
+                    element.Delegate.overlayText = OverlayStyle.GoldCoffer;
                     element.Delegate.overlayTextColor = color;
                 }
                 element.Delegate.radius = 1f;
@@ -709,10 +709,10 @@ namespace Pal.Client.Floors
                 element.Color = color;
                 if (P.Config.SilverText)
                 {
-                    element.Delegate.overlayBGColor = 0;
+                    element.Delegate.overlayBGColor = OverlayStyle.LabelBackground;
                     element.Delegate.overlayVOffset = 0.6f;
-                    element.Delegate.overlayFScale = P.Config.OverlayFScale;
-                    element.Delegate.overlayText = " Silver Treasure Coffer";
+                    element.Delegate.overlayFScale = OverlayStyle.FontScale;
+                    element.Delegate.overlayText = OverlayStyle.SilverCoffer;
                     element.Delegate.overlayTextColor = color;
                 }
                 element.Delegate.radius = 1f;

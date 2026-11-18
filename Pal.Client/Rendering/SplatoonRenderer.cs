@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Pal.Client.Configuration;
 using Pal.Client.DependencyInjection;
 using Pal.Client.Floors;
+using Pal.Client.Properties;
 using Pal.Common;
 using ECommons.DalamudServices;
 using Dalamud.Logging;
@@ -235,18 +236,19 @@ namespace Pal.Client.Rendering
 
         // 已現形陷阱事件物件 DataId → 同種陷阱的動作 id（名稱取自 Action 表）；對照同 Palantir DungeonObjects.TrapVfx。
         // 刻意不含朝聖者之路（2014939／44038）：台服 EObj 與 Action 那兩列是歸零的佔位列。
-        private static readonly (uint DataId, uint ActionId)[] TrapKinds =
+        // 字色（0xRRGGBB）與 NecroLens 共用同一套配色；變身類共用一色。
+        private static readonly (uint DataId, uint ActionId, uint Rgb)[] TrapKinds =
         {
-            (2007182, 6275), (2007183, 6276), (2007184, 6277), (2007185, 6278), (2007186, 6279),
-            (2009504, 11287), (2013284, 32375),
+            (2007182, 6275, 0xFF5A5A), (2007183, 6276, 0xFFD24A), (2007184, 6277, 0xC77DFF), (2007185, 6278, 0x4FC3F7),
+            (2007186, 6279, 0x6EE07A), (2009504, 11287, 0x6EE07A), (2013284, 32375, 0x6EE07A),
         };
 
-        private (uint DataId, string Name)[]? _trapKindNames;
+        private (uint DataId, string Name, uint Color)[]? _trapKindNames;
 
         /// <summary>Splatoon 重新連上後元素都沒了，要重送一次（framework 執行緒讀寫）。</summary>
         public bool TrapLabelsNeedRefresh { get; set; }
 
-        /// <summary>只在框架執行緒呼叫。show＝true 時在每個已現形陷阱上方加一行小字種類名稱，不畫圈。</summary>
+        /// <summary>只在框架執行緒呼叫。show＝true 時在每個已現形陷阱上方加一行依種類上色的名稱，不畫圈。</summary>
         public void UpdateTrapLabels(bool show)
         {
             TrapLabelsNeedRefresh = false;
@@ -257,7 +259,7 @@ namespace Pal.Client.Rendering
                     return;
 
                 List<Element> elements = new();
-                foreach (var (dataId, name) in _trapKindNames ??= LoadTrapKindNames())
+                foreach (var (dataId, name, textColor) in _trapKindNames ??= LoadTrapKindNames())
                 {
                     elements.Add(new Element(ElementType.CircleRelativeToActorPosition)
                     {
@@ -265,10 +267,10 @@ namespace Pal.Client.Rendering
                         thicc = 0f,
                         color = 0, // 全透明的點：只要字
                         overlayText = name,
-                        overlayTextColor = 0xB3FFFFFF,
-                        overlayBGColor = 0x40000000,
+                        overlayTextColor = textColor,
+                        overlayBGColor = OverlayStyle.LabelBackground,
                         overlayVOffset = 0.3f,
-                        overlayFScale = P.Config.OverlayFScale * 0.75f,
+                        overlayFScale = OverlayStyle.FontScale,
                         refActorComparisonType = RefActorComparisonType.DataID,
                         refActorDataID = dataId,
                         includeHitbox = false,
@@ -285,15 +287,15 @@ namespace Pal.Client.Rendering
             }
         }
 
-        private static (uint DataId, string Name)[] LoadTrapKindNames()
+        private static (uint DataId, string Name, uint Color)[] LoadTrapKindNames()
         {
             var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Action>();
-            List<(uint, string)> names = new();
-            foreach (var (dataId, actionId) in TrapKinds)
+            List<(uint, string, uint)> names = new();
+            foreach (var (dataId, actionId, rgb) in TrapKinds)
             {
                 string name = sheet.GetRowOrDefault(actionId)?.Name.GetText() ?? string.Empty;
                 if (name.Length > 0)
-                    names.Add((dataId, name));
+                    names.Add((dataId, name, OverlayStyle.FromRgb(rgb)));
             }
 
             return names.ToArray();
@@ -305,14 +307,19 @@ namespace Pal.Client.Rendering
 
         private (uint DataId, string Name)[]? _returnDeviceNames;
 
-        private static (uint DataId, string Name)[] LoadReturnDeviceNames()
+        // 傳送石塚（死者宮殿）、傳送燈籠（天之御柱）、傳送裝置（正統優雷卡）。
+        private static readonly uint[] PassageDevices = { 2007188, 2009507, 2013287 };
+
+        private (uint DataId, string Name)[]? _passageNames;
+
+        private static (uint DataId, string Name)[] LoadEObjNames(uint[] dataIds, string fallback)
         {
             var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.EObjName>();
             List<(uint, string)> names = new();
-            foreach (uint dataId in ReturnDevices)
+            foreach (uint dataId in dataIds)
             {
                 string name = sheet.GetRowOrDefault(dataId)?.Singular.GetText() ?? string.Empty;
-                names.Add((dataId, name.Length > 0 ? name : "Return"));
+                names.Add((dataId, name.Length > 0 ? name : fallback));
             }
 
             return names.ToArray();
@@ -325,7 +332,7 @@ namespace Pal.Client.Rendering
             if (Plugin.P.Config.DisplayReturn &&
                 Enum.GetValues<ETerritoryType>().Contains((ETerritoryType)Svc.ClientState.TerritoryType))
             {
-                foreach (var (dataId, name) in _returnDeviceNames ??= LoadReturnDeviceNames())
+                foreach (var (dataId, name) in _returnDeviceNames ??= LoadEObjNames(ReturnDevices, Localization.Overlay_Return))
                 {
                     Splatoon.AddDynamicElement(Name, new Element(ElementType.CircleRelativeToActorPosition)
                     {
@@ -333,7 +340,8 @@ namespace Pal.Client.Rendering
                         color = Plugin.P.Config.ReturnColor.ToUint(),
                         overlayVOffset = 0.76f,
                         overlayText = Plugin.P.Config.ReturnText ? name : "",
-                        overlayFScale = P.Config.OverlayFScale,
+                        overlayBGColor = OverlayStyle.LabelBackground,
+                        overlayFScale = OverlayStyle.FontScale,
                         refActorComparisonType = RefActorComparisonType.DataID,
                         refActorDataID = dataId,
                         includeHitbox = false,
@@ -345,16 +353,16 @@ namespace Pal.Client.Rendering
             {
                 if (Enum.GetValues<ETerritoryType>().Contains((ETerritoryType)Svc.ClientState.TerritoryType))
                 {
-                    uint[] IDs = new uint[] { 2007188, 2009507, 2013287 };
-                    foreach (var x in IDs)
+                    foreach (var (x, name) in _passageNames ??= LoadEObjNames(PassageDevices, Localization.Overlay_Passage))
                     {
                         Splatoon.AddDynamicElement(Name, new Element(ElementType.CircleRelativeToActorPosition)
                         {
                             radius = 2.0f,
                             color = Plugin.P.Config.ExitColor.ToUint(),
                             overlayVOffset = 0.76f,
-                            overlayText = Plugin.P.Config.ExitText ? "Passage" : "",
-                            overlayFScale = P.Config.OverlayFScale,
+                            overlayText = Plugin.P.Config.ExitText ? name : "",
+                            overlayBGColor = OverlayStyle.LabelBackground,
+                            overlayFScale = OverlayStyle.FontScale,
                             refActorComparisonType = RefActorComparisonType.DataID,
                             refActorDataID = x,
                             includeHitbox = false,

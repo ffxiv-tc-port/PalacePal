@@ -1,6 +1,7 @@
 ﻿using ECommons;
 using ECommons.DalamudServices;
 using ECommons.SplatoonAPI;
+using Pal.Client.Rendering;
 using Pal.Common;
 using System;
 using System.Collections.Generic;
@@ -24,8 +25,9 @@ namespace Pal.Client
                 foreach(var x in BronzeCofferDataID)
                 {
                     var element = Splatoon.DecodeElement("{\"Name\":\"Bronze Treasure Coffer\",\"type\":1,\"color\":4279786209,\"overlayBGColor\":0,\"overlayTextColor\":4279786209,\"overlayVOffset\":0.6,\"overlayFScale\":1.3,\"overlayText\":\" Bronze Treasure Coffer\",\"refActorComparisonType\":3,\"includeOwnHitbox\":true}");
-                    if (!P.Config.BronzeText)
-                        element.overlayText = "";
+                    element.overlayText = P.Config.BronzeText ? OverlayStyle.BronzeCoffer : "";
+                    element.overlayBGColor = OverlayStyle.LabelBackground;
+                    element.overlayFScale = OverlayStyle.FontScale;
                     element.refActorDataID = x;
                     var elementFill = Splatoon.DecodeElement("{\"Name\":\"Bronze Treasure Coffer Fill\",\"type\":1,\"color\":840456929,\"overlayVOffset\":0.68,\"overlayFScale\":1.24,\"FillStep\":0.429,\"refActorComparisonType\":3,\"includeOwnHitbox\":true,\"Filled\":true}");
                     elementFill.refActorDataID = x;
@@ -41,11 +43,11 @@ namespace Pal.Client
 
                 {
                     var element = Splatoon.DecodeElement("{\"Name\":\"Mimic Trap Coffer\",\"type\":1,\"color\":4278190335,\"overlayBGColor\":0,\"overlayTextColor\":4278190335,\"overlayVOffset\":0.6,\"overlayFScale\":1.3,\"overlayText\":\" Mimic Trap Coffer\",\"refActorDataID\":2006020,\"FillStep\":0.029,\"refActorComparisonType\":3,\"includeOwnHitbox\":true,\"AdditionalRotation\":0.43633232}");
-                    if (!P.Config.BronzeText)
-                        element.overlayText = "";
+                    element.overlayText = P.Config.BronzeText ? OverlayStyle.MimicCoffer : "";
+                    element.overlayBGColor = OverlayStyle.LabelBackground;
                     element.color = P.Config.MimicColor.ToUint();
                     element.overlayTextColor = P.Config.MimicColor.ToUint();
-                    element.overlayFScale = P.Config.OverlayFScale;
+                    element.overlayFScale = OverlayStyle.FontScale;
                     Splatoon.AddDynamicElement(BronzeTreasureNamespace, element, 0);
                     if (P.Config.BronzeFill)
                     {
