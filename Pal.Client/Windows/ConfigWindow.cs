@@ -9,7 +9,6 @@ using Dalamud.Plugin.Services;
 using ECommons;
 using ECommons.Configuration;
 using ECommons.ImGuiMethods;
-using Google.Protobuf;
 using Dalamud.Bindings.ImGui;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -61,11 +60,8 @@ namespace Pal.Client.Windows
         private string? _connectionText;
         private bool _switchToCommunityTab;
         private string _openImportPath = string.Empty;
-        private string _saveExportPath = string.Empty;
         private string? _openImportDialogStartPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        private string? _saveExportDialogStartPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         private readonly FileDialogManager _importDialog;
-        private readonly FileDialogManager _exportDialog;
         private ImportHistory? _lastImport;
 
         private CancellationTokenSource? _testConnectionCts;
@@ -111,8 +107,6 @@ namespace Pal.Client.Windows
 
             _importDialog = new FileDialogManager
             { AddedWindowFlags = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoDocking };
-            _exportDialog = new FileDialogManager
-            { AddedWindowFlags = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoDocking };
 
             _windowSystem.AddWindow(this);
         }
@@ -145,7 +139,6 @@ namespace Pal.Client.Windows
         public override void OnClose()
         {
             _importDialog.Reset();
-            _exportDialog.Reset();
             _testConnectionCts?.Cancel();
             _testConnectionCts = null;
         }
@@ -187,9 +180,6 @@ namespace Pal.Client.Windows
                     {
                         if ((OpenWindow)window == OpenWindow.None) continue;
 
-                        if ((OpenWindow)window == OpenWindow.Export && !_configuration.HasRoleOnCurrentServer(RemoteApi.RemoteUrl, "export:run"))
-                            continue;
-
                         if (ImGui.Selectable($"{string.Join(" ", window.ToString().SplitCamelCase())}", OpenWindow == (OpenWindow)window))
                         {
                             OpenWindow = (OpenWindow)window;
@@ -214,9 +204,6 @@ namespace Pal.Client.Windows
                             break;
                         case OpenWindow.Import:
                             DrawImportTab();
-                            break;
-                        case OpenWindow.Export:
-                            DrawExportTab();
                             break;
                         case OpenWindow.Debug:
                             DrawDebugTab();
@@ -519,40 +506,6 @@ namespace Pal.Client.Windows
             }
         }
 
-        private void DrawExportTab()
-        {
-            if (_configuration.HasRoleOnCurrentServer(RemoteApi.RemoteUrl, "export:run"))
-            {
-                string todaysFileName = $"export-{DateTime.Today:yyyy-MM-dd}.pal";
-                if (string.IsNullOrEmpty(_saveExportPath) && !string.IsNullOrEmpty(_saveExportDialogStartPath))
-                    _saveExportPath = Path.Join(_saveExportDialogStartPath, todaysFileName);
-
-                ImGui.TextWrapped(string.Format(Localization.Config_ExportSource, RemoteApi.RemoteUrl));
-                ImGui.Text(Localization.Config_Export_SaveAs);
-                ImGui.SameLine();
-                ImGui.InputTextWithHint("", Localization.Config_SelectImportFile_Hint, ref _saveExportPath, 260);
-                ImGui.SameLine();
-                if (ImGuiComponents.IconButton(FontAwesomeIcon.Search))
-                {
-                    _importDialog.SaveFileDialog(Localization.Palace_Pal, $"{Localization.Palace_Pal} (*.pal) {{.pal}}",
-                        todaysFileName, "pal", (success, path) =>
-                        {
-                            if (success && !string.IsNullOrEmpty(path))
-                            {
-                                _saveExportPath = path;
-                            }
-                        }, startPath: _saveExportDialogStartPath, isModal: false);
-                    _saveExportDialogStartPath =
-                        null; // only use this once, FileDialogManager will save path between calls
-                }
-
-                ImGui.BeginDisabled(string.IsNullOrEmpty(_saveExportPath) || File.Exists(_saveExportPath));
-                if (ImGui.Button(Localization.Config_StartExport))
-                    DoExport(_saveExportPath);
-                ImGui.EndDisabled();
-            }
-        }
-
         private void DrawDebugTab()
         {
 
@@ -698,33 +651,6 @@ namespace Pal.Client.Windows
             }, cts.Token);
         }
 
-        private void DoExport(string destinationPath)
-        {
-            Task.Run(async () =>
-            {
-                try
-                {
-                    (bool success, ExportRoot export) = await _remoteApi.DoExport();
-                    if (success)
-                    {
-                        await using var output = File.Create(destinationPath);
-                        export.WriteTo(output);
-
-                        _chat.Message($"Export saved as {destinationPath}.");
-                    }
-                    else
-                    {
-                        _chat.Error("Export failed due to server error.");
-                    }
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, "Export failed");
-                    _chat.Error($"Export failed: {e}");
-                }
-            });
-        }
-
         internal static void Spacing(bool cont = false)
         {
             ImGuiEx.TextV($" {(cont ? "├" : "└")} ");
@@ -770,7 +696,6 @@ namespace Pal.Client.Windows
         DeepDungeons,
         Community,
         Import,
-        Export,
         Debug,
         About
     }

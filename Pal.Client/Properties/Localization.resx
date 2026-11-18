@@ -162,6 +162,10 @@
     <value>Unable to fetch statistics.</value>
     <comment>Shown when /pal stats produces a server-side error, and the statistics window can't be loaded.</comment>
   </data>
+  <data name="Command_pal_stats_Retired" xml:space="preserve">
+    <value>Global statistics came from the original author's retired server and are no longer available. Statistics for the floor you're on are on the 'Debug' tab of the configuration window.</value>
+    <comment>Reply to /pal stats: the global statistics server is retired.</comment>
+  </data>
   <data name="Error_CommandFailed" xml:space="preserve">
     <value>Command could not be executed: {0}</value>
     <comment>Shown when '/pal ...' fails, with the placeholder filled with the exception message.</comment>

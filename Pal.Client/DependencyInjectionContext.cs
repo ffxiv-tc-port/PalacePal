@@ -144,8 +144,6 @@ namespace Pal.Client
             // windows & related services
             _serviceCollection.AddScoped<AgreementWindow>();
             _serviceCollection.AddScoped<ConfigWindow>();
-            _serviceCollection.AddScoped<StatisticsService>();
-            _serviceCollection.AddScoped<StatisticsWindow>();
             _serviceCollection.AddScoped<MinimapWindow>();
 
             // rendering

@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using Pal.Client.DependencyInjection;
+using Pal.Client.Properties;
 
 namespace Pal.Client.Commands
 {
+    /// <summary>全體統計只存在於已停用的舊伺服器；保留子指令是為了回說明，而不是讓舊使用者看到「未知子指令」。</summary>
     internal sealed class PalStatsCommand : ISubCommand
     {
-        private readonly StatisticsService _statisticsService;
+        private readonly Chat _chat;
 
-        public PalStatsCommand(StatisticsService statisticsService)
+        public PalStatsCommand(Chat chat)
         {
-            _statisticsService = statisticsService;
+            _chat = chat;
         }
 
         public IReadOnlyDictionary<string, Action<string>> GetHandlers()
@@ -20,6 +22,6 @@ namespace Pal.Client.Commands
             };
 
         private void Execute()
-            => _statisticsService.ShowGlobalStatistics();
+            => _chat.Message(Localization.Command_pal_stats_Retired);
     }
 }

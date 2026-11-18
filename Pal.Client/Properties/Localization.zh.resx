@@ -671,4 +671,8 @@
   <data name="pnText overlay font scale Help" xml:space="preserve">
     <value>所有疊字標籤（陷阱、寶箱、通道）的文字大小；實際顯示為此值的 {0} 倍。</value>
   </data>
+  <data name="Command_pal_stats_Retired" xml:space="preserve">
+    <value>全體統計來自原作者已停用的舊伺服器，已無法取得；目前所在樓層的統計請看設定視窗的「Debug」分頁。</value>
+    <comment>Reply to /pal stats: the global statistics server is retired.</comment>
+  </data>
 </root>

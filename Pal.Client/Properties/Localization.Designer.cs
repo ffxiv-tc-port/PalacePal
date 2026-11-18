@@ -139,6 +139,15 @@ namespace Pal.Client.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Global statistics came from the original author&apos;s retired server....
+        /// </summary>
+        internal static string Command_pal_stats_Retired {
+            get {
+                return ResourceManager.GetString("Command_pal_stats_Retired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unknown sub-command &apos;{0}&apos; for &apos;{1}&apos;..
         /// </summary>
         internal static string Command_pal_UnknownSubcommand {
