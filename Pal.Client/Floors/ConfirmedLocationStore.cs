@@ -4,12 +4,14 @@ using System.IO;
 using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace Pal.Client.Floors
 {
     // 本檔假設與契約：
     // - 我方確認資料庫，與 PalacePal 自己的 sqlite（含下載、匯入）完全分開，只收本機親眼確認的點。
-    // - Observe／FlushIfDirty／Dispose 只在 framework 執行緒呼叫；IPC 只讀 GetSnapshot() 回的不可變快照。
+    // - Observe／FlushIfDirty／FlushIfDeferred／Dispose 只在 framework 執行緒呼叫；IPC 只讀 GetSnapshot() 回的不可變快照。
+    // - 寫檔在背景執行緒，只碰 FlushIfDirty 當下深拷貝的快照；同一時間最多一個寫入（.tmp 名稱固定）。
     // - 不依賴 Dalamud，方便離線測試。
 
     internal enum EConfirmedKind
@@ -129,6 +131,9 @@ namespace Pal.Client.Floors
         /// </summary>
         public const float MergeDistance = 1.5f;
 
+        /// <summary>卸載時最多等進行中的背景寫入這麼久；逾時就不再寫。</summary>
+        public static readonly TimeSpan DisposeWait = TimeSpan.FromSeconds(2);
+
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
             WriteIndented = true,
@@ -144,7 +149,14 @@ namespace Pal.Client.Floors
 
         private ushort _visitTerritory;
         private int _visitFloor = -1;
-        private bool _dirty;
+
+        // _version 每次改動 +1（主執行緒）；_persistedVersion 只在寫入成功後更新（背景）。兩者不同＝還有沒落地的改動，
+        // 寫入失敗時不更新 ⇒ 下一次 FlushIfDirty 自然重寫。
+        private int _version;
+        private volatile int _persistedVersion;
+        private Task? _pendingWrite;
+        private bool _flushDeferred;
+        private bool _disposed;
         private volatile ConfirmedLocationSnapshot _snapshot = ConfirmedLocationSnapshot.Empty;
 
         public ConfirmedLocationStore(string path, Action<string> logInfo, Action<string> logWarning,
@@ -174,7 +186,7 @@ namespace Pal.Client.Floors
 
         /// <summary>
         /// 記一次觀測。同一次樓層造訪內同一點只算一次；本身不寫檔。
-        /// 回 <see cref="EObserveResult.Added"/> 時呼叫端要在同一幀呼叫 <see cref="FlushIfDirty"/>（新點當幀落地，
+        /// 回 <see cref="EObserveResult.Added"/> 時呼叫端要在同一幀呼叫 <see cref="FlushIfDirty"/>（新點當幀交給背景寫入，
         /// 同幀多點只寫一次）；次數／時間的更新等換區、卸載時一起寫。
         /// </summary>
         public EObserveResult Observe(ushort territory, int floor, EConfirmedKind kind, Vector3 position,
@@ -211,7 +223,7 @@ namespace Pal.Client.Floors
                 if (!changed)
                     return EObserveResult.None;
 
-                _dirty = true;
+                _version++;
                 return EObserveResult.Updated;
             }
 
@@ -231,7 +243,7 @@ namespace Pal.Client.Floors
                 _data.Territories[territory] = list = new List<ConfirmedLocation>();
             list.Add(created);
             _touchedThisVisit.Add(created);
-            _dirty = true;
+            _version++;
             RebuildSnapshot();
 
             _logInfo($"PalacePal:我方確認資料庫新增 1 點（區域 {territory}、第 {floor} 層、{kind}、方式 {method}、"
@@ -239,16 +251,98 @@ namespace Pal.Client.Floors
             return EObserveResult.Added;
         }
 
+        /// <summary>
+        /// 有沒落地的改動就深拷貝一份交給背景寫（主執行緒不序列化、不碰檔案）。
+        /// 前一次背景寫還沒完成就不另開，記下延後，由 <see cref="FlushIfDeferred"/> 在它完成後補送最新內容。
+        /// </summary>
         public void FlushIfDirty()
         {
-            if (!_dirty)
+            if (_disposed || _version == _persistedVersion)
                 return;
 
-            if (TrySave())
-                _dirty = false;
+            if (_pendingWrite is { IsCompleted: false })
+            {
+                _flushDeferred = true;
+                return;
+            }
+
+            _flushDeferred = false;
+            int version = _version;
+            ConfirmedLocationFile snapshot = CloneData();
+            _pendingWrite = Task.Run(() =>
+            {
+                if (TrySave(snapshot))
+                    _persistedVersion = version;
+            });
         }
 
-        public void Dispose() => FlushIfDirty();
+        /// <summary>每幀呼叫：只補送因背景寫未完成而延後的那一次；寫入失敗不在這裡重試（等下一個新點或換區）。</summary>
+        public void FlushIfDeferred()
+        {
+            if (_flushDeferred && _pendingWrite is { IsCompleted: true })
+                FlushIfDirty();
+        }
+
+        /// <summary>有界地等進行中的背景寫；回 true＝已經沒有進行中的寫入。</summary>
+        public bool WaitForPendingWrite(TimeSpan timeout)
+        {
+            Task? pending = _pendingWrite;
+            if (pending == null)
+                return true;
+            try
+            {
+                return pending.Wait(timeout);
+            }
+            catch (AggregateException)
+            {
+                return true;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+            _disposed = true;
+
+            // 逾時仍在寫的那份還握著 .tmp，再同步寫會互相踩 ⇒ 放棄這次，原檔維持最後一次完整寫入的內容。
+            if (!WaitForPendingWrite(DisposeWait))
+            {
+                _logWarning($"PalacePal:我方確認資料庫的背景寫入 {DisposeWait.TotalSeconds:F0} 秒內沒有完成，卸載時不再等、也不再寫；"
+                            + "最後一批變動可能沒有存進檔案。");
+                return;
+            }
+
+            if (_version != _persistedVersion && TrySave(CloneData()))
+                _persistedVersion = _version;
+        }
+
+        private ConfirmedLocationFile CloneData()
+        {
+            var clone = new ConfirmedLocationFile { Version = _data.Version };
+            foreach (var (territory, list) in _data.Territories)
+            {
+                var copy = new List<ConfirmedLocation>(list.Count);
+                foreach (var l in list)
+                {
+                    copy.Add(new ConfirmedLocation
+                    {
+                        Type = l.Type,
+                        X = l.X,
+                        Y = l.Y,
+                        Z = l.Z,
+                        Methods = l.Methods,
+                        FirstConfirmedUtc = l.FirstConfirmedUtc,
+                        LastConfirmedUtc = l.LastConfirmedUtc,
+                        Count = l.Count,
+                    });
+                }
+
+                clone.Territories[territory] = copy;
+            }
+
+            return clone;
+        }
 
         private ConfirmedLocation? Find(ushort territory, EConfirmedKind kind, Vector3 position)
         {
@@ -288,10 +382,10 @@ namespace Pal.Client.Floors
             _snapshot = new ConfirmedLocationSnapshot(byTerritory);
         }
 
-        private int TotalCount()
+        private static int TotalCount(ConfirmedLocationFile data)
         {
             int total = 0;
-            foreach (var list in _data.Territories.Values)
+            foreach (var list in data.Territories.Values)
                 total += list.Count;
             return total;
         }
@@ -326,21 +420,23 @@ namespace Pal.Client.Floors
             }
         }
 
-        private bool TrySave()
+        // 背景執行緒與 Dispose 都會呼叫；只讀參數 data（快照），不碰 _data。永不擲例外。
+        private bool TrySave(ConfirmedLocationFile data)
         {
             string temp = _path + ".tmp";
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-                byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(_data, JsonOptions);
-                File.WriteAllBytes(temp, bytes);
+                byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(data, JsonOptions);
+                using (var fs = new FileStream(temp, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    fs.Write(bytes);
+                    fs.Flush(true);
+                }
 
                 var verify = JsonSerializer.Deserialize<ConfirmedLocationFile>(File.ReadAllBytes(temp), JsonOptions);
-                int expected = TotalCount();
-                int actual = 0;
-                if (verify?.Territories != null)
-                    foreach (var list in verify.Territories.Values)
-                        actual += list.Count;
+                int expected = TotalCount(data);
+                int actual = verify?.Territories != null ? TotalCount(verify) : 0;
                 if (actual != expected)
                     throw new InvalidDataException($"暫存檔讀回 {actual} 點，預期 {expected} 點");
 

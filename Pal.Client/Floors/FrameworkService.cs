@@ -173,6 +173,7 @@ namespace Pal.Client.Floors
             try
             {
                 bool recreateLayout = false;
+                _confirmedStore.FlushIfDeferred();
 
                 while (EarlyEventQueue.TryDequeue(out IQueueOnFrameworkThread? queued))
                     HandleQueued(queued, ref recreateLayout);
@@ -596,7 +597,7 @@ namespace Pal.Client.Floors
             }
             finally
             {
-                // 新點當幀落地；同一幀加了幾點都只整份重寫一次。
+                // 新點當幀交給背景寫入；同一幀加了幾點都只整份重寫一次。
                 if (added)
                     _confirmedStore.FlushIfDirty();
             }
