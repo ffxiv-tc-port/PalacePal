@@ -6,6 +6,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Dalamud.Logging;
 using Dalamud.Plugin;
+using Dalamud.Utility;
 using Dalamud.Bindings.ImGui;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -39,23 +40,39 @@ namespace Pal.Client.Configuration
             if (!File.Exists(ConfigPath))
             {
                 _logger.LogInformation("No config file exists, creating one");
-                Save(new ConfigurationV7(), false);
+                WriteConfigFile(new ConfigurationV7());
             }
 
             return JsonSerializer.Deserialize<ConfigurationV7>(File.ReadAllText(ConfigPath, Encoding.UTF8)) ??
                    new ConfigurationV7();
         }
 
-        public void Save(IConfigurationInConfigDirectory config, bool queue = true)
+        /// <returns>寫入失敗回 false（只記錄、不擲出），原檔維持上一次的完整內容；<see cref="Saved"/> 只在寫成功時觸發。</returns>
+        public bool Save(IConfigurationInConfigDirectory config, bool queue = true)
         {
-            File.WriteAllText(ConfigPath,
-                JsonSerializer.Serialize(config, config.GetType(),
-                    new JsonSerializerOptions
-                    { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }),
-                Encoding.UTF8);
+            try
+            {
+                WriteConfigFile(config);
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, "PalacePal:寫入 {File} 失敗（{Error}），原檔維持上一次的內容，下次存檔再試。",
+                    ConfigurationData.ConfigFileName, $"{e.GetType().Name}: {e.Message}");
+                return false;
+            }
 
             if (queue && config is ConfigurationV7 v7)
                 Saved?.Invoke(this, v7);
+            return true;
+        }
+
+        // Load／Migrate 走這條、照舊擲例外：遷移寫不進新檔時，不能接著把舊設定檔改名成 .old。
+        private void WriteConfigFile(IConfigurationInConfigDirectory config)
+        {
+            FilesystemUtil.WriteAllTextSafe(ConfigPath,
+                JsonSerializer.Serialize(config, config.GetType(),
+                    new JsonSerializerOptions
+                    { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
         }
 
 #pragma warning disable CS0612
@@ -74,7 +91,7 @@ namespace Pal.Client.Configuration
                 configurationV1.Save(_pluginInterface);
 
                 var v7 = MigrateToV7(configurationV1);
-                Save(v7, queue: false);
+                WriteConfigFile(v7);
 
                 using (var scope = _serviceProvider.CreateScope())
                 {
