@@ -195,36 +195,50 @@ namespace Pal.Client
                     return;
                 }
 
+                // 子指令會讀物件表、開關視窗，一律回框架執行緒。用 Run 不用 RunOnFrameworkThread：
+                // 卸載中後者會在這條背景執行緒上就地執行；Run 只排隊，卸載時由 _initCts 取消。
                 try
                 {
-                    IPalacePalConfiguration configuration =
-                        rootScope.ServiceProvider.GetRequiredService<IPalacePalConfiguration>();
-                    if (configuration.FirstUse && arguments != "" && arguments != "config")
-                    {
-                        chat.Error(Localization.Error_FirstTimeSetupRequired);
-                        return;
-                    }
-
-                    Action<string> commandHandler = rootScope.ServiceProvider
-                        .GetRequiredService<IEnumerable<ISubCommand>>()
-                        .SelectMany(cmd => cmd.GetHandlers())
-                        .Where(cmd => cmd.Key == arguments.ToLowerInvariant())
-                        .Select(cmd => cmd.Value)
-                        .SingleOrDefault(missingCommand =>
-                        {
-                            chat.Error(string.Format(Localization.Command_pal_UnknownSubcommand, missingCommand,
-                                command));
-                        });
-                    commandHandler.Invoke(arguments);
+                    await _framework.Run(() => ExecuteSubCommand(rootScope, chat, command, arguments),
+                        _initCts.Token);
                 }
-                catch (Exception e)
+                catch (OperationCanceledException)
                 {
-                    _logger.LogError(e, "Could not execute command '{Command}' with arguments '{Arguments}'", command,
-                        arguments);
-                    chat.Error(string.Format(Localization.Error_CommandFailed,
-                        $"{e.GetType()} - {e.Message}"));
                 }
             });
+        }
+
+        private void ExecuteSubCommand(IServiceScope rootScope, Chat chat, string command, string arguments)
+        {
+            try
+            {
+                IPalacePalConfiguration configuration =
+                    rootScope.ServiceProvider.GetRequiredService<IPalacePalConfiguration>();
+                if (configuration.FirstUse && arguments != "" && arguments != "config")
+                {
+                    chat.Error(Localization.Error_FirstTimeSetupRequired);
+                    return;
+                }
+
+                Action<string> commandHandler = rootScope.ServiceProvider
+                    .GetRequiredService<IEnumerable<ISubCommand>>()
+                    .SelectMany(cmd => cmd.GetHandlers())
+                    .Where(cmd => cmd.Key == arguments.ToLowerInvariant())
+                    .Select(cmd => cmd.Value)
+                    .SingleOrDefault(missingCommand =>
+                    {
+                        chat.Error(string.Format(Localization.Command_pal_UnknownSubcommand, missingCommand,
+                            command));
+                    });
+                commandHandler.Invoke(arguments);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Could not execute command '{Command}' with arguments '{Arguments}'", command,
+                    arguments);
+                chat.Error(string.Format(Localization.Error_CommandFailed,
+                    $"{e.GetType()} - {e.Message}"));
+            }
         }
 
         private void OpenConfigUi()
