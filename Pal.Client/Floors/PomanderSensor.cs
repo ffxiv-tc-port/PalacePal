@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 using Microsoft.Extensions.Logging;
 
@@ -102,11 +101,7 @@ namespace Pal.Client.Floors
         /// 也刻意不包 try/catch —— 懸空指標造成的 AccessViolationException 在 .NET Core
         /// 屬於 corrupted-state exception,try/catch 攔不到,加了只會製造假的安全感。
         /// </summary>
-        private static InstanceContentDeepDungeon* GetDeepDungeon()
-        {
-            var eventFramework = EventFramework.Instance();
-            return eventFramework == null ? null : eventFramework->GetInstanceContentDeepDungeon();
-        }
+        private static InstanceContentDeepDungeon* GetDeepDungeon() => DeepDungeonDirector.Get();
 
         /// <summary>每幀呼叫。不在深宮內時會把狀態清乾淨。</summary>
         public void Update()

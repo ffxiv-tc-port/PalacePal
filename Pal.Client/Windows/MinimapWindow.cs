@@ -7,7 +7,6 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using Microsoft.Extensions.Logging;
 using Pal.Client.Floors;
 using Pal.Client.Properties;
@@ -162,15 +161,18 @@ namespace Pal.Client.Windows
             DrawMap(Unit * ImGuiHelpers.GlobalScale * Math.Clamp(P.Config.MinimapScale, 0.5f, 2f));
         }
 
-        /// <summary>回 false＝這一幀不畫（不在深宮、魔王層）；回 true 且 <see cref="_unavailable"/>＝讀到不合理的值，只畫提示。</summary>
+        /// <summary>回 false＝這一幀不畫（不在深宮、魔王層）；回 true 且 <see cref="_unavailable"/>＝讀到不合理的值或遊戲函式對不上，只畫提示。</summary>
         private bool Capture()
         {
-            var eventFramework = EventFramework.Instance();
-            var dd = eventFramework == null ? null : eventFramework->GetInstanceContentDeepDungeon();
+            var dd = DeepDungeonDirector.Get();
             if (dd == null)
             {
                 _floorKey = 0;
-                return false;
+                if (DeepDungeonDirector.IsResolved)
+                    return false;
+
+                _unavailable = true;
+                return true;
             }
 
             byte dungeonId = dd->DeepDungeonId;
