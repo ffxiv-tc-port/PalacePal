@@ -205,7 +205,7 @@ namespace Pal.Client.Floors
                         _renderAdapter.UpdateTrapLabels(false);
                     ResetSteppedTraps(floorChange: false);
                     _debugState.Reset();
-                    Plugin.P._rootScope!.ServiceProvider.GetRequiredService<RenderAdapter>()._implementation.UpdateExitElement();
+                    _renderAdapter.UpdateExitElement();
                     ExternalUtils.UpdateBronzeTreasureCoffers(_clientState.TerritoryType);
                 }
 

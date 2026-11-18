@@ -45,6 +45,7 @@ namespace Pal.Client
         private ILogger _logger = DependencyInjectionContext.LoggerProvider.CreateLogger<Plugin>();
         private WindowSystem? _windowSystem;
         internal IServiceScope? _rootScope;
+        private RenderAdapter? _renderAdapter;
         private Action? _loginAction;
 
         /// <summary>
@@ -124,6 +125,7 @@ namespace Pal.Client
 
                 await _framework.RunOnFrameworkThread(() =>
                 {
+                    _renderAdapter = _rootScope.ServiceProvider.GetRequiredService<RenderAdapter>();
                     _pluginInterface.UiBuilder.Draw += Draw;
                     _pluginInterface.UiBuilder.OpenConfigUi += OpenConfigUi;
                     _pluginInterface.LanguageChanged += LanguageChanged;
@@ -264,7 +266,7 @@ namespace Pal.Client
 
         private void Draw()
         {
-            _rootScope!.ServiceProvider.GetRequiredService<RenderAdapter>().DrawLayers();
+            _renderAdapter!.DrawLayers();
             _windowSystem!.Draw();
         }
 
